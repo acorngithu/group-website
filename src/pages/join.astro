@@ -1,0 +1,108 @@
+---
+// src/pages/join.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { join } from "../data/join";
+
+const open = join.positions.filter((p) => p.open);
+---
+
+<BaseLayout title="Join us — Research Group" description="Open positions and how to join the group.">
+  <main class="wrap">
+    <header class="masthead">
+      <div class="eyebrow">Opportunities</div>
+      <h1>Join us</h1>
+      <p>{join.intro}</p>
+    </header>
+
+    <section class="positions" aria-label="Open positions">
+      <h2 class="section-heading">
+        Open positions
+        {open.length > 0 && <span class="count">{open.length}</span>}
+      </h2>
+      {
+        open.length > 0 ? (
+          <div class="pos-list">
+            {open.map((p) => (
+              <article class="pos">
+                <div class="pos-head">
+                  <h3>{p.title}</h3>
+                  {p.detail && <span class="pos-detail">{p.detail}</span>}
+                </div>
+                <p>{p.description}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p class="empty">No open positions right now — but we still welcome enquiries.</p>
+        )
+      }
+    </section>
+
+    <section class="apply" aria-label="How to apply">
+      <h2 class="section-heading">How to apply</h2>
+      <div class="prose">
+        {join.howToApply.map((para) => <p>{para}</p>)}
+      </div>
+      <a class="contact" href={`mailto:${join.contactEmail}`}>{join.contactEmail}</a>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .positions { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .pos-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+  }
+  .pos {
+    padding: 1.4rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+  }
+  .pos-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .pos-head h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.25rem;
+  }
+  .pos-detail {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+  .pos p { color: var(--muted); font-size: 0.98rem; }
+
+  .prose { max-width: 68ch; }
+  .prose p { color: var(--ink); font-size: 1.05rem; line-height: 1.7; }
+  .prose p + p { margin-top: 0.9rem; }
+
+  .contact {
+    display: inline-block;
+    margin-top: 1.4rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: opacity 0.18s;
+  }
+  .contact:hover,
+  .contact:focus-visible { opacity: 0.88; outline: none; }
+
+  .empty { color: var(--muted); }
+</style>

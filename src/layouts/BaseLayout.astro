@@ -1,0 +1,179 @@
+---
+// src/layouts/BaseLayout.astro
+// Shared shell for every page: <head>, sticky header + nav, footer.
+// Wrap a page's content in <BaseLayout title="…"> … </BaseLayout>.
+import "../styles/global.css";
+import { site } from "../data/site";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = site.tagline } = Astro.props;
+
+// Base-path aware links (works under a GitHub Pages project base like
+// "/group-website" and at the domain root alike).
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const norm = (p: string) => {
+  const s = p.replace(/\/+$/, "");
+  return s === "" ? "/" : s;
+};
+const here = norm(Astro.url.pathname);
+const href = (p: string) => (p === "/" ? BASE || "/" : BASE + p);
+const isActive = (p: string) => {
+  const h = norm(href(p));
+  return here === h || (p !== "/" && here.startsWith(h + "/"));
+};
+
+const nav = [
+  { href: "/", label: "Home" },
+  { href: "/research", label: "Research" },
+  { href: "/people", label: "People" },
+  { href: "/publications", label: "Publications" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/join", label: "Join" },
+];
+
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href={`${BASE}/favicon.svg`} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href={href("/")}>{site.name}</a>
+        <nav class="site-nav" aria-label="Primary">
+          {
+            nav.map((item) => (
+              <a
+                href={href(item.href)}
+                class:list={["nav-link", { active: isActive(item.href) }]}
+                aria-current={isActive(item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span>© {year} {site.name}</span>
+        <span class="footer-meta">{site.institution}</span>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  /* ── Self-hosted fonts (China-safe). Drop the .woff2 files in /public/fonts/.
+       In this component <style>, Astro rewrites these URLs with the site base
+       (e.g. /group-website/fonts/…) so they resolve on a project Pages site.
+       If the files are absent, tokens fall back to Georgia / system fonts. ── */
+  @font-face {
+    font-family: "Newsreader";
+    src: url("/fonts/Newsreader.woff2") format("woff2");
+    font-weight: 400 500;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "InterLocal";
+    src: url("/fonts/Inter.woff2") format("woff2");
+    font-weight: 400 600;
+    font-display: swap;
+  }
+</style>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 2rem);
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(0.75rem, 2vw, 1.6rem);
+  }
+  .nav-link {
+    font-size: 0.92rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.3rem 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.18s, border-color 0.18s;
+  }
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--ink);
+    outline: none;
+  }
+  .nav-link.active {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+
+  /* On phones: stack the brand above the nav so links never cram. */
+  @media (max-width: 620px) {
+    .header-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 0;
+      padding-top: 0.7rem;
+      padding-bottom: 0.7rem;
+    }
+    .site-nav { gap: 0.75rem 1.1rem; }
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--line);
+    margin-top: 4rem;
+    padding: 2rem 0;
+  }
+  .footer-inner {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 2rem);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>

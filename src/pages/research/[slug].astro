@@ -1,0 +1,124 @@
+---
+// src/pages/research/[slug].astro — one research pillar's subpage
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PubList from "../../components/PubList.astro";
+import { research } from "../../data/research";
+import { publications } from "../../data/publications";
+
+export function getStaticPaths() {
+  return research.map((pillar) => ({
+    params: { slug: pillar.slug },
+    props: { pillar },
+  }));
+}
+
+const { pillar } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+
+const related = publications
+  .filter((p) => p.topics?.includes(pillar.slug))
+  .sort((a, b) => b.year - a.year);
+---
+
+<BaseLayout title={`${pillar.title} — Research`} description={pillar.tagline}>
+  <main class="wrap">
+    <a class="back" href={`${BASE}/research`}>&larr; All research</a>
+
+    <header class="pillar-head">
+      <div class="eyebrow">Research pillar</div>
+      <h1>{pillar.title}</h1>
+      <p class="lead">{pillar.tagline}</p>
+    </header>
+
+    <div class="hero-media">
+      <span class="hero-fallback" aria-hidden="true">{pillar.title}</span>
+      <img
+        src={BASE + pillar.image}
+        alt={pillar.alt ?? pillar.title}
+        onerror="this.style.display='none'"
+      />
+    </div>
+
+    <div class="prose">
+      {pillar.description.map((para) => <p>{para}</p>)}
+    </div>
+
+    <section class="related" aria-label="Related publications">
+      <h2 class="section-heading">
+        Related publications
+        {related.length > 0 && <span class="count">{related.length}</span>}
+      </h2>
+      {
+        related.length > 0 ? (
+          <PubList items={related} />
+        ) : (
+          <p class="empty">No related publications tagged yet.</p>
+        )
+      }
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.18s;
+  }
+  .back:hover,
+  .back:focus-visible { color: var(--ink); outline: none; }
+
+  .pillar-head { margin-bottom: 1.75rem; }
+  .pillar-head h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 0.3rem 0 0.7rem;
+  }
+
+  .hero-media {
+    position: relative;
+    aspect-ratio: 21 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--accent-soft);
+    margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+  }
+  .hero-fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: var(--accent);
+    opacity: 0.5;
+  }
+  .hero-media img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .prose {
+    max-width: 68ch;
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+  .prose p {
+    color: var(--ink);
+    font-size: 1.08rem;
+    line-height: 1.7;
+  }
+  .prose p + p { margin-top: 1.1rem; }
+
+  .empty { color: var(--muted); }
+</style>

@@ -1,0 +1,63 @@
+---
+// src/pages/people.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { people, roleSections } from "../data/people";
+import PersonCard from "../components/PersonCard.astro";
+
+// Group members by role section; hide empty sections.
+const grouped = roleSections
+  .map((s) => ({ ...s, members: people.filter((p) => p.role === s.role) }))
+  .filter((s) => s.members.length > 0);
+
+// Anyone without a known role still shows, under a trailing "Others" section.
+const known = new Set(roleSections.map((s) => s.role));
+const others = people.filter((p) => !p.role || !known.has(p.role));
+---
+
+<BaseLayout title="People — Research Group" description="The people who make up the group.">
+  <main class="wrap">
+    <header class="masthead">
+      <div class="eyebrow">Members</div>
+      <h1>People</h1>
+      <p>The researchers, students, and collaborators who make up the group.</p>
+    </header>
+
+    {
+      grouped.map((sec) => (
+        <section class="role-section" aria-label={sec.label}>
+          <h2 class="section-heading">
+            {sec.label}
+            <span class="count">{sec.members.length}</span>
+          </h2>
+          <div class="people">
+            {sec.members.map((person) => (
+              <PersonCard person={person} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {
+      others.length > 0 && (
+        <section class="role-section" aria-label="Others">
+          <h2 class="section-heading">Others</h2>
+          <div class="people">
+            {others.map((person) => (
+              <PersonCard person={person} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .role-section { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .people {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 2rem);
+  }
+</style>

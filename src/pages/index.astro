@@ -1,0 +1,196 @@
+---
+// src/pages/index.astro — Home
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+import { research } from "../data/research";
+import { news, formatDate } from "../data/news";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const href = (p: string) => BASE + p;
+
+const areas = research.slice(0, 6);
+const latestNews = [...news].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 4);
+const cards = [
+  { href: "/research", title: "Research", text: "Themes, projects, and the questions driving our work." },
+  { href: "/people", title: "People", text: "The researchers, students, and collaborators in the group." },
+  { href: "/publications", title: "Publications", text: "Journal articles, conference papers, preprints, and talks." },
+];
+---
+
+<BaseLayout title={`${site.name}`} description={site.tagline}>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">{site.institution}</div>
+      <h1>{site.name}</h1>
+      <p class="lead">{site.intro}</p>
+    </section>
+
+    {
+      latestNews.length > 0 && (
+        <section class="news" aria-label="News">
+          <h2 class="section-label">News</h2>
+          <ul class="news-list">
+            {latestNews.map((item) => (
+              <li>
+                <time datetime={item.date}>{formatDate(item.date)}</time>
+                {item.url ? (
+                  <a href={item.url} target="_blank" rel="noopener">{item.title}</a>
+                ) : (
+                  <span>{item.title}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      areas.length > 0 && (
+        <section class="areas" aria-label="Research areas">
+          <h2 class="section-label">Research areas</h2>
+          <ul class="area-list">
+            {areas.map((a) => (
+              <li>
+                <a href={href("/research")}>{a.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <section class="cards" aria-label="Explore the site">
+      {
+        cards.map((c) => (
+          <a class="card" href={href(c.href)}>
+            <h3>{c.title}</h3>
+            <p>{c.text}</p>
+            <span class="card-go">Explore &rarr;</span>
+          </a>
+        ))
+      }
+    </section>
+
+    <section class="join-cta">
+      <div class="join-cta-text">
+        <h2>Join us</h2>
+        <p>We're recruiting PhD and postdoc researchers.</p>
+      </div>
+      <a class="cta-btn" href={href("/join")}>See open positions &rarr;</a>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: clamp(1rem, 4vw, 3rem) 0 clamp(2rem, 5vw, 3.5rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 7vw, 4.2rem);
+    line-height: 1.03;
+    letter-spacing: -0.02em;
+    margin: 0.3rem 0 1rem;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* News */
+  .news { margin: 2.5rem 0; }
+  .news-list { list-style: none; display: flex; flex-direction: column; }
+  .news-list li {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .news-list li:last-child { border-bottom: none; }
+  .news-list time { color: var(--accent); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .news-list a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); transition: color 0.18s, border-color 0.18s; }
+  .news-list a:hover, .news-list a:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+
+  .areas { margin: 2.75rem 0; }
+  .area-list { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .area-list a {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .area-list a:hover, .area-list a:focus-visible { background: var(--accent-soft); border-color: var(--accent); outline: none; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+    margin-top: 2.75rem;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s;
+  }
+  .card:hover, .card:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(25, 28, 34, 0.07);
+    outline: none;
+  }
+  .card h3 { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; }
+  .card p { color: var(--muted); font-size: 0.95rem; flex: 1; }
+  .card-go { color: var(--accent); font-size: 0.9rem; font-weight: 500; }
+
+  /* Join call-to-action */
+  .join-cta {
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    border-radius: 12px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+  .join-cta-text h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--accent); }
+  .join-cta-text p { color: var(--ink); margin-top: 0.2rem; }
+  .cta-btn {
+    display: inline-block;
+    padding: 0.65rem 1.2rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: opacity 0.18s;
+  }
+  .cta-btn:hover, .cta-btn:focus-visible { opacity: 0.88; outline: none; }
+
+  @media (max-width: 480px) {
+    .news-list li { grid-template-columns: 1fr; gap: 0.1rem; }
+  }
+</style>

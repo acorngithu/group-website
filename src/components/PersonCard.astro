@@ -1,0 +1,105 @@
+---
+// src/components/PersonCard.astro
+import type { Person } from "../data/people";
+
+const { person } = Astro.props as { person: Person };
+const initials = person.nameEn
+  .split(" ")
+  .map((w) => w[0])
+  .join("");
+
+// Prefix the base path (e.g. "/group-website") so photos resolve on a
+// GitHub Pages *project* site. Data keeps its bare "/people/…" paths.
+const photoSrc = import.meta.env.BASE_URL.replace(/\/$/, "") + person.photo;
+---
+
+<article class="person">
+  <div class="portrait">
+    {/* initials sit underneath; if the photo is missing, onerror hides the img and reveals them */}
+    <span class="fallback">{initials}</span>
+    <img
+      src={photoSrc}
+      alt={`Portrait of ${person.nameEn}`}
+      loading="lazy"
+      onerror="this.style.display='none'"
+    />
+  </div>
+
+  <h2 class="name">{person.nameEn}</h2>
+  {person.nameNative && <div class="name-native">{person.nameNative}</div>}
+
+  <div class="meta">
+    {person.email && <a href={`mailto:${person.email}`}>{person.email}</a>}
+    {person.website && (
+      <a class="site" href={person.website} target="_blank" rel="noopener">Website</a>
+    )}
+  </div>
+</article>
+
+<style>
+  .person { display: flex; flex-direction: column; }
+
+  /* fixed-ratio frame; the image keeps its OWN aspect ratio via object-fit */
+  .portrait {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 5px;
+    background: var(--accent-soft);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .portrait img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;            /* fills the frame, never distorts. use `contain` to show the whole photo */
+    object-position: center 22%;  /* bias toward faces */
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .person:hover .portrait img { transform: scale(1.035); }
+
+  .fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    color: #fff;
+    background: var(--accent);
+  }
+
+  .name {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 1.28rem;
+    line-height: 1.15;
+    margin-top: 0.95rem;
+    letter-spacing: -0.005em;
+  }
+  .name-native {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--accent);
+    font-size: 1.02rem;
+    margin-top: 0.15rem;
+  }
+
+  .meta { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.28rem; }
+  .meta a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    width: fit-content;
+    border-bottom: 1px solid transparent;
+    transition: color 0.18s, border-color 0.18s;
+  }
+  .meta a:hover, .meta a:focus-visible { color: var(--ink); border-color: var(--ink); outline: none; }
+  .meta .site::after { content: " ↗"; color: var(--accent); font-size: 0.82em; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>

@@ -1,0 +1,43 @@
+---
+// src/pages/publications.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PubList from "../components/PubList.astro";
+import { publications, pubSections } from "../data/publications";
+
+// Group entries by section type, newest year first; drop empty sections.
+const grouped = pubSections
+  .map((s) => ({
+    ...s,
+    items: publications
+      .filter((p) => p.type === s.type)
+      .sort((a, b) => b.year - a.year),
+  }))
+  .filter((s) => s.items.length > 0);
+---
+
+<BaseLayout title="Publications — Research Group" description="Journal articles, conference papers, preprints, and talks.">
+  <main class="wrap">
+    <header class="masthead">
+      <div class="eyebrow">Output</div>
+      <h1>Publications</h1>
+      <p>Journal articles, conference papers, preprints, and invited talks from the group.</p>
+    </header>
+
+    {
+      grouped.map((sec) => (
+        <section class="pub-section" aria-label={sec.label}>
+          <h2 class="section-heading">
+            {sec.label}
+            <span class="count">{sec.items.length}</span>
+          </h2>
+          <PubList items={sec.items} />
+        </section>
+      ))
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  /* Citation list styling lives in PubList.astro (shared with pillar pages). */
+  .pub-section { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+</style>

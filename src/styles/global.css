@@ -1,0 +1,96 @@
+/* src/styles/global.css
+   ─────────────────────────────────────────────────────────────────────────
+   Global design system for the whole site. Imported once by BaseLayout.astro.
+   Page-specific styles stay scoped inside each .astro page/component.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Self-hosted @font-face rules live in BaseLayout.astro (in a <style is:global>
+   block) so Astro rewrites the /fonts/ URLs with the site base path. Fonts are
+   China-safe self-hosted files in /public/fonts/; if absent, the tokens below
+   gracefully fall back to Georgia / system fonts. */
+
+/* ── Design tokens (keep consistent across every page) ── */
+:root {
+  --paper: #f6f7f8;
+  --ink: #191c22;
+  --muted: #6b7178;
+  --accent: #2c6e6a;
+  --accent-soft: #2c6e6a1a;
+  --line: rgba(25, 28, 34, 0.1);
+  --serif: "Newsreader", Georgia, serif;
+  --sans: "InterLocal", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* ── Shared layout primitives ── */
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4.5rem) clamp(1.25rem, 4vw, 2rem);
+}
+
+/* Page header block, reused on Research / People / Publications */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1.75rem;
+  margin-bottom: 2.75rem;
+}
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+.masthead h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 5vw, 3.1rem);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+.masthead p { color: var(--muted); max-width: 52ch; margin-top: 0.7rem; }
+
+/* Lead paragraph (hero intros) */
+.lead {
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+/* Section subheading, reused on People / Publications */
+.section-heading {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.4rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+.section-heading .count {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}

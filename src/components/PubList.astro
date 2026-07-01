@@ -1,0 +1,84 @@
+---
+// src/components/PubList.astro
+// Renders a list of publications (year + citation). Shared by the Publications
+// page and each research pillar's "Related publications" section.
+import type { Publication } from "../data/publications";
+
+const { items } = Astro.props as { items: Publication[] };
+---
+
+<ol class="pub-list">
+  {
+    items.map((p) => (
+      <li class="pub">
+        <div class="pub-year">{p.year}</div>
+        <div class="pub-body">
+          <div class="pub-title">
+            {p.url ? (
+              <a href={p.url} target="_blank" rel="noopener">{p.title}</a>
+            ) : (
+              p.title
+            )}
+          </div>
+          <div class="pub-authors">{p.authors}</div>
+          <div class="pub-venue">
+            <span class="venue-name">{p.venue}</span>
+            {p.note && <span class="pub-note">{p.note}</span>}
+          </div>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .pub-list { list-style: none; display: flex; flex-direction: column; }
+  .pub {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .pub:last-child { border-bottom: none; }
+
+  .pub-year {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--accent);
+    padding-top: 0.05rem;
+  }
+  .pub-title {
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+  }
+  .pub-title a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .pub-title a:hover,
+  .pub-title a:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+
+  .pub-authors { color: var(--muted); font-size: 0.92rem; margin-top: 0.2rem; }
+  .pub-venue { font-size: 0.92rem; margin-top: 0.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+  .venue-name { font-style: italic; color: var(--ink); }
+  .pub-note {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  @media (max-width: 520px) {
+    .pub { grid-template-columns: 1fr; gap: 0.3rem; }
+    .pub-year { font-size: 0.95rem; }
+  }
+</style>
