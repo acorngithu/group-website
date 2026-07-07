@@ -8,8 +8,9 @@ import { site } from "../data/site";
 interface Props {
   title: string;
   description?: string;
+  theme?: "light" | "dark";
 }
-const { title, description = site.tagline } = Astro.props;
+const { title, description = site.tagline, theme = "dark" } = Astro.props;
 
 // Base-path aware links (works under a GitHub Pages project base like
 // "/group-website" and at the domain root alike).
@@ -46,7 +47,7 @@ const year = new Date().getFullYear();
     <link rel="icon" href={`${BASE}/favicon.svg`} />
     <title>{title}</title>
   </head>
-  <body>
+  <body class:list={[{ "theme-dark": theme === "dark" }]}>
     <header class="site-header">
       <div class="header-inner">
         <a class="brand" href={href("/")}>{site.name}</a>

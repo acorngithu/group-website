@@ -1,196 +1,211 @@
 ---
-// src/pages/index.astro — Home
-import BaseLayout from "../layouts/BaseLayout.astro";
+// src/pages/index.astro — Home (dark "physical neural" theme, neural-field background)
+// NOTE: the previous academic Home is preserved at design-backups/index.academic.astro.
+// To revert, copy that file back over this one.
+import NeuralField from "../components/NeuralField.astro";
 import { site } from "../data/site";
-import { research } from "../data/research";
 import { news, formatDate } from "../data/news";
+import { research } from "../data/research";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
-const href = (p: string) => BASE + p;
+const href = (p: string) => (p === "/" ? BASE || "/" : BASE + p);
 
-const areas = research.slice(0, 6);
+const pillars = research.slice(0, 3);
 const latestNews = [...news].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 4);
-const cards = [
-  { href: "/research", title: "Research", text: "Themes, projects, and the questions driving our work." },
-  { href: "/people", title: "People", text: "The researchers, students, and collaborators in the group." },
-  { href: "/publications", title: "Publications", text: "Journal articles, conference papers, preprints, and talks." },
+const nav = [
+  { h: "/research", l: "Research" },
+  { h: "/people", l: "People" },
+  { h: "/publications", l: "Publications" },
+  { h: "/gallery", l: "Gallery" },
+  { h: "/join", l: "Join" },
 ];
+const year = new Date().getFullYear();
 ---
 
-<BaseLayout title={`${site.name}`} description={site.tagline}>
-  <main class="wrap">
-    <section class="hero">
-      <div class="eyebrow">{site.institution}</div>
-      <h1>{site.name}</h1>
-      <p class="lead">{site.intro}</p>
-    </section>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={site.tagline} />
+    <link rel="icon" href={`${BASE}/favicon.svg`} />
+    <title>{site.name}</title>
+  </head>
+  <body>
+    <NeuralField />
 
-    {
-      latestNews.length > 0 && (
-        <section class="news" aria-label="News">
-          <h2 class="section-label">News</h2>
-          <ul class="news-list">
-            {latestNews.map((item) => (
-              <li>
-                <time datetime={item.date}>{formatDate(item.date)}</time>
-                {item.url ? (
-                  <a href={item.url} target="_blank" rel="noopener">{item.title}</a>
-                ) : (
-                  <span>{item.title}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
+    <div class="home">
+      <header class="hd">
+        <div class="wrap">
+          <a class="brand" href={href("/")}>{site.name}</a>
+          <nav>
+            {nav.map((i) => <a href={href(i.h)}>{i.l}</a>)}
+          </nav>
+        </div>
+      </header>
 
-    {
-      areas.length > 0 && (
-        <section class="areas" aria-label="Research areas">
-          <h2 class="section-label">Research areas</h2>
-          <ul class="area-list">
-            {areas.map((a) => (
-              <li>
-                <a href={href("/research")}>{a.title}</a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )
-    }
+      <section class="hero">
+        <div class="wrap">
+          <div class="hero-inner">
+            <div class="eyebrow">{site.institution}</div>
+            <h1>{site.name}</h1>
+            <p class="lead">{site.intro}</p>
+            <div class="cta-row">
+              <a class="btn primary" href={href("/research")}>Explore the research &rarr;</a>
+              <a class="btn ghost" href={href("/join")}>Join us</a>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <section class="cards" aria-label="Explore the site">
-      {
-        cards.map((c) => (
-          <a class="card" href={href(c.href)}>
-            <h3>{c.title}</h3>
-            <p>{c.text}</p>
-            <span class="card-go">Explore &rarr;</span>
-          </a>
-        ))
-      }
-    </section>
+      <div class="below">
+        <div class="wrap sections">
+          <section class="research" aria-label="Research">
+            <div class="sec-head">
+              <h2 class="label">Research</h2>
+              <a class="more" href={href("/research")}>View all &rarr;</a>
+            </div>
+            <div class="pillars">
+              {
+                pillars.map((p, i) => (
+                  <a class="pillar" href={href(`/research/${p.slug}`)}>
+                    <span class="pnum" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                    <img src={BASE + p.image} alt={p.alt ?? p.title} loading="lazy" onerror="this.style.display='none'" />
+                    <div class="pscrim" />
+                    <div class="ptext">
+                      <h3>{p.title}</h3>
+                      <p>{p.tagline}</p>
+                    </div>
+                  </a>
+                ))
+              }
+            </div>
+          </section>
 
-    <section class="join-cta">
-      <div class="join-cta-text">
-        <h2>Join us</h2>
-        <p>We're recruiting PhD and postdoc researchers.</p>
+          {
+            latestNews.length > 0 && (
+              <section class="news" aria-label="News">
+                <div class="sec-head">
+                  <h2 class="label">News</h2>
+                </div>
+                <ul class="news-list">
+                  {latestNews.map((item) => (
+                    <li>
+                      <time datetime={item.date}>{formatDate(item.date)}</time>
+                      {item.url ? <a href={item.url} target="_blank" rel="noopener">{item.title}</a> : <span>{item.title}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          <section class="join-cta">
+            <div>
+              <h2>Join us</h2>
+              <p>We're recruiting PhD and postdoc researchers.</p>
+            </div>
+            <a class="btn primary" href={href("/join")}>See open positions &rarr;</a>
+          </section>
+        </div>
+
+        <footer class="ft">
+          <div class="wrap">
+            <span>© {year} {site.name}</span>
+            <span>{site.institution}</span>
+          </div>
+        </footer>
       </div>
-      <a class="cta-btn" href={href("/join")}>See open positions &rarr;</a>
-    </section>
-  </main>
-</BaseLayout>
+    </div>
+  </body>
+</html>
 
 <style>
-  .hero {
-    padding: clamp(1rem, 4vw, 3rem) 0 clamp(2rem, 5vw, 3.5rem);
-    border-bottom: 1px solid var(--line);
-  }
-  .hero h1 {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: clamp(2.6rem, 7vw, 4.2rem);
-    line-height: 1.03;
-    letter-spacing: -0.02em;
-    margin: 0.3rem 0 1rem;
+  @font-face {
+    font-family: "SpaceGrotesk";
+    src: url("/fonts/SpaceGrotesk.woff2") format("woff2");
+    font-weight: 400 700;
+    font-display: swap;
   }
 
-  .section-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
+  :root {
+    --hbg: #0a1119;
+    --ink: #eaf1ff;
+    --muted: #9fb0c6;
+    --accent: #3d74ff;
+    --accent2: #7fa6ff;
+    --warm: #f5934a;
+    --line: rgba(255, 255, 255, 0.1);
+    --card: rgba(18, 28, 42, 0.55);
+    --display: "SpaceGrotesk", system-ui, sans-serif;
+    --sans: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   }
 
-  /* News */
-  .news { margin: 2.5rem 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--hbg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 2.5rem); }
+
+  .home { position: relative; z-index: 2; }
+
+  header.hd { position: absolute; top: 0; left: 0; right: 0; z-index: 3; }
+  header.hd .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 74px; flex-wrap: wrap; }
+  .brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.01em; text-decoration: none; color: #fff; }
+  .hd nav { display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: 0.9rem; }
+  .hd nav a { color: var(--muted); text-decoration: none; transition: color 0.18s; }
+  .hd nav a:hover, .hd nav a:focus-visible { color: #fff; outline: none; }
+
+  /* hero: full-width container so its left edge lines up with the sections below */
+  .hero { min-height: 100vh; display: flex; align-items: center; }
+  .hero > .wrap { width: 100%; }
+  .hero-inner { max-width: 42ch; padding: 8rem 0 4rem; }
+  .eyebrow { font-family: var(--display); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent2); display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.1rem; }
+  .eyebrow::before { content: ""; width: 30px; height: 2px; background: var(--accent2); }
+  .hero h1 { font-family: var(--display); font-size: clamp(2.6rem, 6.5vw, 4.6rem); font-weight: 700; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(100deg, #ffffff 55%, #7fa6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { color: #c7d3e4; font-size: clamp(1.05rem, 1.6vw, 1.22rem); margin-top: 1.2rem; max-width: 46ch; }
+
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.9rem; }
+  .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.35rem; border-radius: 9px; font-weight: 600; font-family: var(--display); font-size: 0.95rem; text-decoration: none; border: 1px solid transparent; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; }
+  .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 8px 24px rgba(61, 116, 255, 0.4); }
+  .btn.primary:hover { transform: translateY(-2px); }
+  .btn.ghost { border-color: rgba(255, 255, 255, 0.28); color: #fff; }
+  .btn.ghost:hover { border-color: #fff; background: rgba(255, 255, 255, 0.06); }
+
+  /* everything below the hero sits on an opaque panel that covers the field */
+  .below { position: relative; background: var(--hbg); border-top: 1px solid var(--line); }
+  .sections { padding: clamp(3rem, 7vw, 5rem) clamp(1.25rem, 4vw, 2.5rem); display: flex; flex-direction: column; gap: clamp(2.75rem, 6vw, 4.5rem); }
+
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
+  .label { font-family: var(--display); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .more { color: var(--accent2); text-decoration: none; font-size: 0.88rem; font-weight: 600; }
+  .more:hover { color: #fff; }
+
+  /* research pillar cards */
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(1rem, 2.5vw, 1.4rem); }
+  .pillar { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; text-decoration: none; border: 1px solid var(--line); background: linear-gradient(160deg, #16283f, #0e1826); transition: transform 0.25s cubic-bezier(0.2,0.7,0.2,1), border-color 0.25s; }
+  .pillar:hover { transform: translateY(-4px); border-color: rgba(127, 166, 255, 0.55); }
+  .pnum { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: clamp(2.4rem, 6vw, 3.4rem); font-weight: 700; color: #fff; opacity: 0.12; }
+  .pillar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.2,0.7,0.2,1); }
+  .pillar:hover img { transform: scale(1.05); }
+  .pscrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,12,20,0.82) 0%, rgba(8,12,20,0.2) 48%, transparent 72%); }
+  .ptext { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.1rem; color: #fff; }
+  .ptext h3 { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.15; }
+  .ptext p { color: #c7d3e4; font-size: 0.88rem; margin-top: 0.3rem; }
+
   .news-list { list-style: none; display: flex; flex-direction: column; }
-  .news-list li {
-    display: grid;
-    grid-template-columns: 7.5rem 1fr;
-    gap: 0.75rem;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid var(--line);
-    align-items: baseline;
-  }
+  .news-list li { display: grid; grid-template-columns: 8rem 1fr; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
   .news-list li:last-child { border-bottom: none; }
-  .news-list time { color: var(--accent); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
-  .news-list a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); transition: color 0.18s, border-color 0.18s; }
-  .news-list a:hover, .news-list a:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+  .news-list time { color: var(--accent2); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .news-list a, .news-list span { color: var(--ink); text-decoration: none; }
+  .news-list a { border-bottom: 1px solid var(--line); transition: color 0.18s, border-color 0.18s; }
+  .news-list a:hover { color: var(--accent2); border-color: var(--accent2); }
 
-  .areas { margin: 2.75rem 0; }
-  .area-list { list-style: none; display: flex; flex-wrap: wrap; gap: 0.6rem; }
-  .area-list a {
-    display: inline-block;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 0.9rem;
-    color: var(--ink);
-    text-decoration: none;
-    transition: background 0.18s, border-color 0.18s;
-  }
-  .area-list a:hover, .area-list a:focus-visible { background: var(--accent-soft); border-color: var(--accent); outline: none; }
+  .join-cta { padding: clamp(1.5rem, 4vw, 2.25rem); border-radius: 14px; background: rgba(61, 116, 255, 0.12); border: 1px solid rgba(61, 116, 255, 0.4); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; }
+  .join-cta h2 { font-family: var(--display); font-weight: 600; font-size: 1.5rem; color: #fff; }
+  .join-cta p { color: #c7d3e4; margin-top: 0.2rem; }
 
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: clamp(1rem, 2.5vw, 1.5rem);
-    margin-top: 2.75rem;
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding: 1.5rem;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--ink);
-    background: #fff;
-    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s;
-  }
-  .card:hover, .card:focus-visible {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(25, 28, 34, 0.07);
-    outline: none;
-  }
-  .card h3 { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; }
-  .card p { color: var(--muted); font-size: 0.95rem; flex: 1; }
-  .card-go { color: var(--accent); font-size: 0.9rem; font-weight: 500; }
+  .ft { border-top: 1px solid var(--line); padding: 2rem 0; }
+  .ft .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; color: var(--muted); font-size: 0.85rem; }
 
-  /* Join call-to-action */
-  .join-cta {
-    margin-top: clamp(2.5rem, 5vw, 3.5rem);
-    padding: clamp(1.5rem, 4vw, 2.25rem);
-    border-radius: 12px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem 1.5rem;
-  }
-  .join-cta-text h2 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--accent); }
-  .join-cta-text p { color: var(--ink); margin-top: 0.2rem; }
-  .cta-btn {
-    display: inline-block;
-    padding: 0.65rem 1.2rem;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #fff;
-    text-decoration: none;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: opacity 0.18s;
-  }
-  .cta-btn:hover, .cta-btn:focus-visible { opacity: 0.88; outline: none; }
-
-  @media (max-width: 480px) {
-    .news-list li { grid-template-columns: 1fr; gap: 0.1rem; }
-  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>

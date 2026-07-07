@@ -25,6 +25,7 @@ export interface Pillar {
   image: string;
   alt?: string;
   description: string[];
+  figures?: { src: string; caption?: string; alt?: string }[]; // paper screenshots / result figures
 }
 
 export const research: Pillar[] = [
@@ -40,6 +41,10 @@ export const research: Pillar[] = [
       "A second paragraph with more detail — methods, collaborations, or the " +
         "kinds of results this line of work produces. Add or remove paragraphs " +
         "freely.",
+    ],
+    figures: [
+      { src: "/research/figures/result-1.svg", caption: "Fig. 1 — Placeholder result (swap for a real figure or paper screenshot)." },
+      { src: "/research/figures/result-2.svg", caption: "Fig. 2 — Benchmark comparison (placeholder)." },
     ],
   },
   {

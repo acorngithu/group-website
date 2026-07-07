@@ -21,6 +21,18 @@
   --sans: "InterLocal", system-ui, -apple-system, sans-serif;
 }
 
+/* Dark tone — opt in per page via <BaseLayout theme="dark">. Overrides colour
+   tokens only; the serif/sans typography stays the same, giving a calm
+   "dark academic" reading page. Flip this on site-wide later by defaulting it. */
+body.theme-dark {
+  --paper: #0a1119;
+  --ink: #eaf1ff;
+  --muted: #9fb0c6;
+  --accent: #3d74ff;
+  --accent-soft: rgba(61, 116, 255, 0.14);
+  --line: rgba(255, 255, 255, 0.1);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {

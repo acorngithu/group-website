@@ -2,6 +2,7 @@
 // src/pages/research/[slug].astro — one research pillar's subpage
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PubList from "../../components/PubList.astro";
+import Figure from "../../components/Figure.astro";
 import { research } from "../../data/research";
 import { publications } from "../../data/publications";
 
@@ -42,6 +43,17 @@ const related = publications
     <div class="prose">
       {pillar.description.map((para) => <p>{para}</p>)}
     </div>
+
+    {
+      pillar.figures && pillar.figures.length > 0 && (
+        <section class="figures" aria-label="Figures">
+          <h2 class="section-heading">Figures</h2>
+          <div class="fig-grid">
+            {pillar.figures.map((f) => <Figure src={f.src} caption={f.caption} alt={f.alt} />)}
+          </div>
+        </section>
+      )
+    }
 
     <section class="related" aria-label="Related publications">
       <h2 class="section-heading">
@@ -119,6 +131,9 @@ const related = publications
     line-height: 1.7;
   }
   .prose p + p { margin-top: 1.1rem; }
+
+  .figures { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .fig-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: clamp(1rem, 2.5vw, 1.4rem); }
 
   .empty { color: var(--muted); }
 </style>

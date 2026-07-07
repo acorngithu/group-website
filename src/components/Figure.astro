@@ -1,0 +1,68 @@
+---
+// src/components/Figure.astro
+// Presents a figure/image on the dark theme inside a light "matte" card, so
+// white-background paper screenshots and plots look intentional (not a harsh
+// white box). Uses object-fit: contain so figures are never cropped.
+//
+// Usage:  <Figure src="/research/figures/result-1.png" caption="Fig. 1 — …" />
+interface Props {
+  src: string;        // path under /public (base is applied) or an absolute URL
+  caption?: string;
+  alt?: string;
+}
+const { src, caption, alt } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const resolved = /^https?:\/\//.test(src) ? src : BASE + src;
+---
+
+<figure class="figure">
+  <div class="mat">
+    <img
+      src={resolved}
+      alt={alt ?? caption ?? "Figure"}
+      loading="lazy"
+      onerror="this.closest('.figure')?.classList.add('missing')"
+    />
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .figure {
+    background: #0f1a29;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.75);
+  }
+  /* light mat: a white-background screenshot blends into it; the card border
+     and shadow define the boundary against the dark page */
+  .mat {
+    background: #f5f7fa;
+    padding: 18px;
+    display: grid;
+    place-items: center;
+    min-height: 120px;
+  }
+  .mat img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+  figcaption {
+    padding: 0.85rem 1.1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+  /* graceful fallback if the image is missing */
+  .figure.missing .mat img { display: none; }
+  .figure.missing .mat::after {
+    content: "Figure";
+    color: #9aa6b6;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+</style>

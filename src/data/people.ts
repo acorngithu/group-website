@@ -24,10 +24,9 @@ export interface Person {
 
 export const people: Person[] = [
   {
-    nameEn: "Jane Doe",
-    nameNative: "简·多伊",
-    email: "jane.doe@university.edu",
-    website: "https://janedoe.example.com",
+    nameEn: "Fan O. Wu",
+    nameNative: "吴凡",
+    email: "wufan@westlake.edu",
     photo: "/people/jane-doe.jpg",
     role: "pi",
   },
