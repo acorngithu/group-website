@@ -1,0 +1,967 @@
+---
+// src/components/PillarFigure.astro
+// A dark-native animated figure used as a research pillar's hero. Pass a `kind`
+// that selects one of the canvas animations in the registry below. Self-hosted,
+// vanilla JS, pauses off-screen, honors prefers-reduced-motion.
+interface Props { kind: string; }
+const { kind } = Astro.props;
+---
+
+<canvas class="pillar-fig" data-fig={kind} aria-hidden="true"></canvas>
+
+<style>
+  .pillar-fig { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+</style>
+
+<script>
+  const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const TAU = Math.PI * 2;
+
+  function setup(cv) {
+    const ctx = cv.getContext("2d");
+    let w = 0, h = 0;
+    function fit() {
+      const r = cv.getBoundingClientRect();
+      w = Math.max(1, Math.round(r.width)); h = Math.max(1, Math.round(r.height));
+      cv.width = w * DPR; cv.height = h * DPR;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    fit();
+    new ResizeObserver(fit).observe(cv);
+    return { ctx, size: () => ({ w, h }) };
+  }
+  function glow(ctx, x, y, r, color) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+  }
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // ── shared: the reconfigurable-photonics scene ──────────────────────────────
+  const smooth = (v) => v * v * (3 - 2 * v);
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  // continuous refractive-index field n(x, y, t) in [0,1]
+  const fieldR = (nx, ny, tt) => 0.5 + (
+    Math.sin(6.2 * nx + tt * 0.7) * Math.cos(5.0 * ny - tt * 0.5)
+    + 0.7 * Math.sin(3.3 * nx - 2.4 * ny + tt * 0.9)
+    + 0.5 * Math.cos(4.1 * ny + tt * 0.45)
+  ) / 3.2;
+
+  function geoOf(w, h) {
+    const topPad = h * 0.22, botPad = h * 0.10, sidePad = w * 0.05;
+    const gx = sidePad, gy = topPad, gw = w - 2 * sidePad, gh = h - topPad - botPad;
+    return { w, h, gx, gy, gw, gh, PX: (nx) => gx + nx * gw, PY: (ny) => gy + ny * gh };
+  }
+
+  function drawProjector(ctx, g, t) {
+    const { w, h, gx, gy, gw, gh } = g;
+    const px = w * 0.5, py = h * 0.06;
+    const cone = ctx.createLinearGradient(px, py, px, gy + gh * 0.2);
+    cone.addColorStop(0, "rgba(162,168,255,0.28)");
+    cone.addColorStop(1, "rgba(120,160,255,0.02)");
+    ctx.fillStyle = cone;
+    ctx.beginPath();
+    ctx.moveTo(px - 11, py + 9);
+    ctx.lineTo(gx + gw * 0.30, gy);
+    ctx.lineTo(gx + gw * 0.70, gy);
+    ctx.lineTo(px + 11, py + 9);
+    ctx.closePath(); ctx.fill();
+    ctx.globalCompositeOperation = "lighter";
+    for (let s = 0; s < 3; s++) {
+      const sx = gx + gw * (0.34 + s * 0.16 + 0.02 * Math.sin(t * 0.9 + s));
+      glow(ctx, sx, gy + 2, 18, "rgba(175,190,255,0.5)");
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#2c3a55"; rr(ctx, px - 21, py - 8, 42, 18, 4); ctx.fill();
+    ctx.fillStyle = "#a68bff"; rr(ctx, px - 5, py + 8, 10, 4, 2); ctx.fill();
+  }
+
+  function drawRays(ctx, g, t) {
+    const { PX, PY } = g;
+    const grad = (nx, ny) => {
+      const e = 0.01;
+      return [(fieldR(nx + e, ny, t) - fieldR(nx - e, ny, t)) / (2 * e),
+              (fieldR(nx, ny + e, t) - fieldR(nx, ny - e, t)) / (2 * e)];
+    };
+    const starts = [0.26, 0.5, 0.74];
+    starts.forEach((y0, ri) => {
+      let x = 0, y = y0, vx = 1, vy = 0;
+      const pts = [[x, y]];
+      for (let s = 0; s < 130 && x < 1.001; s++) {
+        const [gxx, gyy] = grad(x, y);
+        vx += gxx * 0.002; vy += gyy * 0.009;
+        const m = Math.hypot(vx, vy) || 1; vx /= m; vy /= m;
+        x += vx * 0.010; y += vy * 0.010;
+        if (y < 0.02) { pts.push([x, 0.02]); break; }
+        if (y > 0.98) { pts.push([x, 0.98]); break; }
+        pts.push([x, y]);
+      }
+      const path = () => { ctx.beginPath(); pts.forEach((p, k) => { const X = PX(p[0]), Y = PY(p[1]); k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); };
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = "rgba(140,185,255,0.16)"; ctx.lineWidth = 5; path(); ctx.stroke();
+      ctx.strokeStyle = "rgba(208,230,255,0.78)"; ctx.lineWidth = 1.8; path(); ctx.stroke();
+      if (!REDUCE) {
+        const prog = (t * 0.30 + ri * 0.33) % 1;
+        const pt = pts[Math.floor(prog * (pts.length - 1))];
+        if (pt) glow(ctx, PX(pt[0]), PY(pt[1]), 11, "rgba(226,238,255,0.95)");
+      }
+      glow(ctx, PX(0), PY(y0), 7, "rgba(150,185,255,0.85)");
+      const end = pts[pts.length - 1];
+      if (end) glow(ctx, PX(end[0]), PY(end[1]), 7, "rgba(255,255,255,0.9)");
+      ctx.globalCompositeOperation = "source-over";
+    });
+  }
+
+  // ── variant A: discrete "pixel" index cells (the saved Figure 1) ──
+  function reconfigurable(cv) {
+    const { ctx, size } = setup(cv);
+    const cols = 22, rows = 9;
+    let t = 0;
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      drawProjector(ctx, g, t);
+      const cw = g.gw / cols, ch = g.gh / rows;
+      ctx.globalCompositeOperation = "lighter";
+      const pad = Math.min(cw, ch) * 0.12, rad = Math.min(cw, ch) * 0.22;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const v = smooth(clamp01(fieldR((i + 0.5) / cols, (j + 0.5) / rows, t)));
+        const x = g.gx + i * cw, y = g.gy + j * ch;
+        const R = 45 + v * 115, G = 100 + v * 60, B = 205 + v * 50;
+        ctx.fillStyle = `rgba(${R | 0},${G | 0},${B | 0},${0.05 + v * 0.48})`;
+        rr(ctx, x + pad, y + pad, cw - 2 * pad, ch - 2 * pad, rad); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+      drawRays(ctx, g, t);
+    };
+  }
+
+  // ── variant B: continuous, pixel-less index field (the test) ──
+  function reconfigurableSmooth(cv) {
+    const { ctx, size } = setup(cv);
+    let t = 0;
+    const bw = 180, bh = 80, buf = document.createElement("canvas");
+    buf.width = bw; buf.height = bh;
+    const bctx = buf.getContext("2d"), img = bctx.createImageData(bw, bh);
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      drawProjector(ctx, g, t);
+      // smooth continuous index landscape (dark navy → periwinkle)
+      const d = img.data;
+      for (let yy = 0; yy < bh; yy++) for (let xx = 0; xx < bw; xx++) {
+        const v = smooth(clamp01(fieldR(xx / (bw - 1), yy / (bh - 1), t)));
+        const p = (yy * bw + xx) * 4;
+        d[p] = 14 + v * 146; d[p + 1] = 24 + v * 131; d[p + 2] = 40 + v * 215; d[p + 3] = 255;
+      }
+      bctx.putImageData(img, 0, 0);
+      ctx.save();
+      rr(ctx, g.gx, g.gy, g.gw, g.gh, Math.min(g.gw, g.gh) * 0.05); ctx.clip();
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(buf, g.gx, g.gy, g.gw, g.gh);
+      ctx.restore();
+      drawRays(ctx, g, t);
+    };
+  }
+
+  // ── variant C: fine "small-pixel" index grid (SLM-like) ──
+  function reconfigurablePixels(cv) {
+    const { ctx, size } = setup(cv);
+    const cols = 56, rows = 22;
+    let t = 0;
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      drawProjector(ctx, g, t);
+      const cw = g.gw / cols, ch = g.gh / rows;
+      ctx.globalCompositeOperation = "lighter";
+      const gap = Math.max(0.5, Math.min(cw, ch) * 0.16), rad = Math.min(cw, ch) * 0.3;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const v = smooth(clamp01(fieldR((i + 0.5) / cols, (j + 0.5) / rows, t)));
+        const x = g.gx + i * cw, y = g.gy + j * ch;
+        const R = 45 + v * 115, G = 100 + v * 60, B = 205 + v * 50;
+        ctx.fillStyle = `rgba(${R | 0},${G | 0},${B | 0},${0.05 + v * 0.5})`;
+        rr(ctx, x + gap / 2, y + gap / 2, cw - gap, ch - gap, rad); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+      drawRays(ctx, g, t);
+    };
+  }
+
+  // ── Optical thermodynamic computing: multimode light thermalizes / self-cleans
+  //    warm speckle (left, hot) condenses into a cool clean beam (right). ──
+  function thermalize(cv) {
+    const { ctx, size } = setup(cv);
+    const bw = 190, bh = 84, buf = document.createElement("canvas");
+    buf.width = bw; buf.height = bh;
+    const bctx = buf.getContext("2d"), img = bctx.createImageData(bw, bh);
+    const modes = [
+      { kx: 3.1, ky: 2.2, ph: 0.0, sp: 1.1 },
+      { kx: 5.0, ky: 1.4, ph: 1.7, sp: 0.9 },
+      { kx: 2.0, ky: 4.1, ph: 3.2, sp: 1.4 },
+      { kx: 6.3, ky: 3.0, ph: 0.9, sp: 0.7 },
+      { kx: 4.2, ky: 5.2, ph: 2.4, sp: 1.2 },
+      { kx: 1.5, ky: 6.0, ph: 4.1, sp: 1.0 },
+    ];
+    let t = 0;
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      for (const m of modes) m.ph += dt * m.sp;
+
+      const d = img.data;
+      for (let yy = 0; yy < bh; yy++) for (let xx = 0; xx < bw; xx++) {
+        const nx = xx / (bw - 1);            // 0..1 propagation (left→right)
+        const ny = (yy / (bh - 1)) * 2 - 1;  // -1..1 transverse
+        const c = smooth(nx);                // "cleanliness" grows along propagation
+        const tt = 1 - c;                    // temperature (hot at input)
+        const sig = 0.5 - 0.34 * c;          // beam narrows as it condenses
+        const gauss = Math.exp(-(ny * ny) / (2 * sig * sig));
+        let sp = 0;
+        for (const m of modes) sp += Math.cos(m.kx * nx * 7 + m.ky * ny * 3.2 + m.ph);
+        sp /= modes.length;                  // -1..1
+        let I = gauss * (1 + tt * sp * 0.9) * (0.5 + 0.8 * c);
+        I = Math.max(0, Math.min(1, I));
+        const p = (yy * bw + xx) * 4;
+        d[p] = I * (255 * tt + 120 * (1 - tt));
+        d[p + 1] = I * (140 * tt + 175 * (1 - tt));
+        d[p + 2] = I * (70 * tt + 255 * (1 - tt));
+        d[p + 3] = 255;
+      }
+      bctx.putImageData(img, 0, 0);
+      ctx.save();
+      rr(ctx, g.gx, g.gy, g.gw, g.gh, Math.min(g.gw, g.gh) * 0.05); ctx.clip();
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(buf, g.gx, g.gy, g.gw, g.gh);
+      ctx.restore();
+    };
+  }
+
+  // ── Optical thermodynamic computing: thermalized light on a chip; its mode
+  //    amplitudes random-walk (Ornstein–Uhlenbeck) and the trajectory's
+  //    collective covariance ellipse IS the matrix inverse (Σ ∝ A⁻¹). ──
+  function thermalCompute(cv) {
+    const { ctx, size } = setup(cv);
+    const A = [[1.3, -0.75], [-0.75, 1.05]]; // "Hamiltonian"; covariance ∝ A⁻¹
+    let a0 = 3.0, a1 = -3.2;                  // start off in a corner (the "Initial")
+    const trail = [], MAXT = 760, grid = 4;
+    let t = 0;
+    const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5);
+    // optional chip bitmap (drop your render at public/research/thermal-chip.png);
+    // falls back to the schematic below if the file is missing.
+    const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+    const chip = new Image();
+    let chipReady = false;
+    chip.onload = () => { chipReady = true; };
+    chip.src = BASE + "/research/figures/thermal-chip.png";
+    function ou() {
+      for (let s = 0; s < 2; s++) {
+        const f0 = -(A[0][0] * a0 + A[0][1] * a1);
+        const f1 = -(A[1][0] * a0 + A[1][1] * a1);
+        a0 += f0 * 0.06 + gauss() * 0.33;
+        a1 += f1 * 0.06 + gauss() * 0.33;
+      }
+      trail.push([a0, a1]); if (trail.length > MAXT) trail.shift();
+    }
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+
+      if (REDUCE) { if (!trail.length) for (let k = 0; k < MAXT; k++) ou(); }
+      else ou();
+
+      // ── layout: chip panel (left) + phase space (right) ──
+      const fw = Math.min(w * 0.30, h * 0.74), fh = fw;
+      const fx = w * 0.05, fy = (h - fh) / 2, fcy = fy + fh / 2;
+      const psCx = w * 0.68, psCy = h * 0.50;
+      const psR = Math.min(w * 0.24, h * 0.44), scale = psR / 2.6;
+      const MX = (v) => psCx + v * scale, MY = (v) => psCy - v * scale;
+
+      // chip: framed bitmap (cover-fit) if provided, else schematic
+      if (chipReady) {
+        ctx.globalCompositeOperation = "source-over";
+        ctx.save();
+        rr(ctx, fx, fy, fw, fh, 16); ctx.clip();
+        const ar = chip.width / chip.height || 1, far = fw / fh;
+        let dw = fw, dh = fh, dx = fx, dy = fy;
+        if (ar > far) { dh = fh; dw = fh * ar; dx = fx - (dw - fw) / 2; }
+        else { dw = fw; dh = fw / ar; dy = fy - (dh - fh) / 2; }
+        ctx.drawImage(chip, dx, dy, dw, dh);
+        ctx.restore();
+        ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1;
+        rr(ctx, fx + 0.5, fy + 0.5, fw - 1, fh - 1, 16); ctx.stroke();
+      } else {
+        ctx.globalCompositeOperation = "lighter";
+        glow(ctx, fx + fw / 2, fcy - fh * 0.28, fw * 0.42, "rgba(255,150,60,0.30)");
+        glow(ctx, fx + fw / 2, fcy - fh * 0.28, fw * 0.24, "rgba(255,214,130,0.5)");
+        const cell = fw * 0.14;
+        for (let j = 0; j < grid; j++) for (let i = 0; i < grid; i++) {
+          const x = fx + fw / 2 + (i - (grid - 1) / 2) * cell;
+          const y = fcy + fh * 0.12 + (j - (grid - 1) / 2) * cell * 0.7;
+          const v = 0.5 + 0.5 * Math.sin(t * 1.3 + i * 0.8 + j * 0.6);
+          glow(ctx, x, y, cell * 0.5, `rgba(${120 + (v * 135) | 0},${150 + (v * 40) | 0},255,0.5)`);
+        }
+      }
+
+      // readout wires: two DIFFERENT chip output ports → the two phase-space axes,
+      // with fast-flowing "readout" photons that keep pace with the trajectory.
+      ctx.globalCompositeOperation = "lighter";
+      const wire = (px, py, x1, y1, ctrlDY) => {
+        const cx = (px + x1) / 2, cy = (py + y1) / 2 + ctrlDY;
+        ctx.strokeStyle = "rgba(120,190,255,0.26)"; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke();
+        glow(ctx, px, py, 6, "rgba(150,200,255,0.6)"); // output-port tap
+        if (!REDUCE) for (let k = 0; k < 5; k++) {
+          const u = (t * 2.2 + k / 5) % 1, iu = 1 - u;
+          const mx = iu * iu * px + 2 * iu * u * cx + u * u * x1;
+          const my = iu * iu * py + 2 * iu * u * cy + u * u * y1;
+          glow(ctx, mx, my, 6.5, "rgba(205,232,255,0.85)");
+        }
+      };
+      wire(fx + fw, fcy + fh * 0.14, psCx - psR * 1.02, psCy, -h * 0.05);   // port A → x-axis: Re{aᵢ}
+      wire(fx + fw * 0.90, fy + fh * 0.93, psCx, psCy + psR * 1.02, h * 0.12);    // port B → y-axis: Re{aⱼ}
+
+      // soft bloom behind the phase-space cloud so it reads as boldly as the render
+      ctx.globalCompositeOperation = "lighter";
+      glow(ctx, psCx, psCy, psR * 1.2, "rgba(55,110,225,0.16)");
+
+      // faint axes
+      ctx.globalCompositeOperation = "source-over";
+      ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(psCx - psR, psCy); ctx.lineTo(psCx + psR, psCy);
+      ctx.moveTo(psCx, psCy - psR); ctx.lineTo(psCx, psCy + psR); ctx.stroke();
+
+      ctx.globalCompositeOperation = "lighter";
+      // random trajectory — glow pass + bright core (full tangle, then recent)
+      const drawTrail = (from, lw, col) => {
+        ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+        for (let k = from; k < trail.length; k++) { const X = MX(trail[k][0]), Y = MY(trail[k][1]); k === from ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y); }
+        ctx.stroke();
+      };
+      drawTrail(0, 3.4, "rgba(90,150,255,0.14)");
+      drawTrail(0, 1.3, "rgba(150,195,255,0.55)");
+      const st = Math.max(0, trail.length - 80);
+      drawTrail(st, 4.2, "rgba(160,205,255,0.20)");
+      drawTrail(st, 1.9, "rgba(220,238,255,0.97)");
+
+      // covariance ellipse (∝ A⁻¹) = the matrix inverse — vivid gold with bloom
+      const ellipse = (lw, col) => {
+        ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+        for (let k = 0; k <= 72; k++) {
+          const th = (k / 72) * TAU, ux = Math.cos(th), uy = Math.sin(th);
+          const uAu = A[0][0] * ux * ux + 2 * A[0][1] * ux * uy + A[1][1] * uy * uy;
+          const r = Math.sqrt(1.7 / uAu);
+          const X = MX(r * ux), Y = MY(r * uy);
+          k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+        }
+        ctx.closePath(); ctx.stroke();
+      };
+      ellipse(6, "rgba(255,165,70,0.20)");
+      ellipse(2.4, "rgba(255,192,100,0.98)");
+
+      // current point
+      glow(ctx, MX(a0), MY(a1), 14, "rgba(226,239,255,0.98)");
+      ctx.fillStyle = "#f2f7ff"; ctx.beginPath(); ctx.arc(MX(a0), MY(a1), 2.9, 0, TAU); ctx.fill();
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  // ── Analog neural networks: a lattice of coupled oscillators (Kuramoto) whose
+  //    phases self-organize into shifting domains — collective analog computation. ──
+  function oscillators(cv) {
+    const { ctx, size } = setup(cv);
+    const cols = 20, rows = 7, N = cols * rows;
+    const phase = new Float32Array(N), omega = new Float32Array(N), np = new Float32Array(N);
+    const gr = () => (Math.random() + Math.random() + Math.random() - 1.5);
+    for (let i = 0; i < N; i++) { phase[i] = Math.random() * TAU; omega[i] = 0.7 + gr() * 0.55; }
+    const K = 1.3;
+    const idx = (c, r) => r * cols + c;
+    return (dt) => {
+      const { w, h } = size();
+      const g = geoOf(w, h);
+      const cw = g.gw / cols, ch = g.gh / rows;
+
+      if (!REDUCE) for (let s = 0; s < 2; s++) {
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+          const i = idx(c, r); let sum = 0;
+          if (c > 0) sum += Math.sin(phase[idx(c - 1, r)] - phase[i]);
+          if (c < cols - 1) sum += Math.sin(phase[idx(c + 1, r)] - phase[i]);
+          if (r > 0) sum += Math.sin(phase[idx(c, r - 1)] - phase[i]);
+          if (r < rows - 1) sum += Math.sin(phase[idx(c, r + 1)] - phase[i]);
+          np[i] = phase[i] + (omega[i] + K * sum) * dt * 0.5 + gr() * 0.015;
+        }
+        phase.set(np);
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+
+      // coupling traces (right & down) — brighter where neighbours are in phase
+      ctx.lineWidth = 1;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const i = idx(c, r), x = g.gx + (c + 0.5) * cw, y = g.gy + (r + 0.5) * ch;
+        if (c < cols - 1) { const coh = 0.5 + 0.5 * Math.cos(phase[idx(c + 1, r)] - phase[i]); ctx.strokeStyle = `rgba(150,185,255,${0.04 + coh * 0.16})`; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(g.gx + (c + 1.5) * cw, y); ctx.stroke(); }
+        if (r < rows - 1) { const coh = 0.5 + 0.5 * Math.cos(phase[idx(c, r + 1)] - phase[i]); ctx.strokeStyle = `rgba(150,185,255,${0.04 + coh * 0.16})`; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, g.gy + (r + 1.5) * ch); ctx.stroke(); }
+      }
+      // each oscillator = a small dial with a rotating phasor hand (angle = phase);
+      // synchronized oscillators point the same way (and share colour)
+      const rad = Math.min(cw, ch) * 0.32;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const i = idx(c, r), x = g.gx + (c + 0.5) * cw, y = g.gy + (r + 0.5) * ch;
+        const th = phase[i];
+        const hue = ((((th % TAU) + TAU) % TAU) / TAU) * 360;
+        ctx.strokeStyle = "rgba(130,160,215,0.16)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.stroke();
+        const hx = x + rad * Math.cos(th), hy = y + rad * Math.sin(th);
+        ctx.strokeStyle = `hsla(${hue | 0},88%,66%,0.95)`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(hx, hy); ctx.stroke();
+        glow(ctx, hx, hy, rad * 0.8, `hsla(${hue | 0},90%,66%,0.45)`);
+        ctx.fillStyle = "rgba(220,232,255,0.8)"; ctx.beginPath(); ctx.arc(x, y, 1.6, 0, TAU); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  // ── Figure 3 exploration: an irregular network of coupled oscillators with
+  //    exaggerated dynamics (jittered layout, strong coupling, big pulsing). ──
+  function oscillatorsWild(cv) {
+    const { ctx, size } = setup(cv);
+    const cols = 13, rows = 6, N = cols * rows, KN = 4;
+    const px = new Float32Array(N), py = new Float32Array(N);
+    const phase = new Float32Array(N), omega = new Float32Array(N), np = new Float32Array(N);
+    const gr = () => (Math.random() + Math.random() + Math.random() - 1.5);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const i = r * cols + c;
+      px[i] = Math.max(0.03, Math.min(0.97, (c + 0.5) / cols + gr() * 0.05));
+      py[i] = Math.max(0.05, Math.min(0.95, (r + 0.5) / rows + gr() * 0.09));
+      phase[i] = Math.random() * TAU; omega[i] = 0.8 + gr() * 0.9;
+    }
+    const nbr = [];
+    for (let i = 0; i < N; i++) {
+      const d = [];
+      for (let j = 0; j < N; j++) if (j !== i) d.push([(px[i] - px[j]) ** 2 + (py[i] - py[j]) ** 2, j]);
+      d.sort((a, b) => a[0] - b[0]);
+      nbr.push(d.slice(0, KN).map((e) => e[1]));
+    }
+    const K = 1.9;
+    return (dt) => {
+      const { w, h } = size();
+      const g = geoOf(w, h);
+      const X = (i) => g.gx + px[i] * g.gw, Y = (i) => g.gy + py[i] * g.gh;
+
+      if (!REDUCE) for (let s = 0; s < 2; s++) {
+        for (let i = 0; i < N; i++) {
+          let sum = 0; for (const j of nbr[i]) sum += Math.sin(phase[j] - phase[i]);
+          np[i] = phase[i] + (omega[i] + K * sum) * dt * 0.5 + gr() * 0.03;
+        }
+        phase.set(np);
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+
+      ctx.lineWidth = 1;
+      for (let i = 0; i < N; i++) for (const j of nbr[i]) {
+        if (j < i) continue;
+        const coh = 0.5 + 0.5 * Math.cos(phase[j] - phase[i]);
+        ctx.strokeStyle = `rgba(150,185,255,${0.04 + coh * 0.16})`;
+        ctx.beginPath(); ctx.moveTo(X(i), Y(i)); ctx.lineTo(X(j), Y(j)); ctx.stroke();
+      }
+      const base = Math.min(g.gw / cols, g.gh / rows) * 0.42;
+      for (let i = 0; i < N; i++) {
+        const x = X(i), y = Y(i), th = phase[i];
+        const hue = ((((th % TAU) + TAU) % TAU) / TAU) * 360;
+        const puls = 0.5 + 0.5 * Math.cos(th);
+        const rad = base * (0.35 + 1.15 * puls);
+        glow(ctx, x, y, rad * 1.7, `hsla(${hue | 0},88%,63%,${0.14 + puls * 0.4})`);
+        ctx.fillStyle = `hsl(${hue | 0},85%,${(48 + puls * 22) | 0}%)`;
+        ctx.beginPath(); ctx.arc(x, y, rad * 0.5, 0, TAU); ctx.fill();
+        const hx = x + rad * 1.2 * Math.cos(th), hy = y + rad * 1.2 * Math.sin(th);
+        ctx.strokeStyle = `hsla(${hue | 0},90%,70%,0.9)`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(hx, hy); ctx.stroke();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  // ── Figure 3: a simple TOP-VIEW brain line-art, dismembered into little vectors
+  //    (one per short segment of every stroke). Each is an oscillator: its phase
+  //    rotates at its own frequency and it drifts a little. Only when the phases
+  //    line up do the vectors align into the brain; rotate out and it dissolves.
+  //    A ring on the right counts down to the next formation. ──
+  const BRAIN_D = [
+    "M100,12 C84,7 62,12 47,28 C31,43 24,63 29,84 C23,107 31,133 53,147 C71,161 88,160 100,153 C112,160 129,161 147,147 C169,133 177,107 171,84 C176,63 169,43 153,28 C138,12 116,7 100,12 Z",
+    "M100,17 C97,44 103,68 100,93 C98,116 102,137 100,150",
+    "M82,28 C61,37 51,57 63,74 C71,86 66,101 53,108",
+    "M88,44 C73,53 70,73 85,84 C93,90 89,104 79,113",
+    "M90,62 C81,70 83,84 93,92",
+    "M84,122 C71,127 66,141 82,148",
+    "M118,28 C139,37 149,57 137,74 C129,86 134,101 147,108",
+    "M112,44 C127,53 130,73 115,84 C107,90 111,104 121,113",
+    "M110,62 C119,70 117,84 107,92",
+    "M116,122 C129,127 134,141 118,148",
+  ];
+  function brainVectorsTop() {
+    try {
+      const NS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "0 0 200 178");
+      svg.style.cssText = "position:absolute;left:-9999px;width:0;height:0;overflow:hidden";
+      document.body.appendChild(svg);
+      const vecs = [];
+      for (const d of BRAIN_D) {
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("d", d); svg.appendChild(path);
+        const len = path.getTotalLength();
+        if (!len) continue;
+        const step = 5;
+        for (let l = 0; l < len - 0.1; l += step) {
+          const p0 = path.getPointAtLength(l), p1 = path.getPointAtLength(Math.min(len, l + step));
+          vecs.push([((p0.x + p1.x) / 2 - 100) / 200, ((p0.y + p1.y) / 2 - 89) / 200, Math.atan2(p1.y - p0.y, p1.x - p0.x), Math.hypot(p1.x - p0.x, p1.y - p0.y) / 200]);
+        }
+      }
+      document.body.removeChild(svg);
+      return vecs.length ? vecs : null;
+    } catch (e) { return null; }
+  }
+  function oscillatorsBrain(cv) {
+    const { ctx, size } = setup(cv);
+    const V = brainVectorsTop();
+    const N = V ? V.length : 160;
+    const P = [];
+    for (let i = 0; i < N; i++) {
+      const v = V ? V[i] : [(Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.4, Math.random() * TAU, 0.02];
+      P.push({
+        mx: v[0], my: v[1], ang: v[2], seg: Math.max(v[3], 0.013),
+        omega: (0.5 + Math.random() * 1.7) * (Math.random() < 0.5 ? -1 : 1),
+        p0: Math.random() * TAU,
+        df1: 0.4 + Math.random() * 0.7, df2: 0.4 + Math.random() * 0.7,
+        dp1: Math.random() * TAU, dp2: Math.random() * TAU,
+        dax: Math.random() - 0.5, day: Math.random() - 0.5,
+        af: 0.6 + Math.random() * 0.9, ap: Math.random() * TAU,
+      });
+    }
+    let t = 0;
+    const CYCLE = 10;
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      const bScale = Math.min(g.gw * 0.44, g.gh * 1.05);
+      const bcx = g.gx + g.gw * 0.5, bcy = g.gy + g.gh * 0.5;
+      const u = (((t % CYCLE) + CYCLE) % CYCLE) / CYCLE;
+      let a = Math.exp(-Math.pow(Math.min(u, 1 - u) / 0.10, 2)); // opens assembled, reforms each cycle
+      if (typeof window !== "undefined" && window.__brainForm != null) a = window.__brainForm;
+      a = Math.max(0, Math.min(1, a));
+      const drift = (1 - a) * 0.09;
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
+
+      for (const p of P) {
+        const ox = drift * (0.6 * Math.sin(t * p.df1 + p.dp1) + p.dax);
+        const oy = drift * (0.6 * Math.sin(t * p.df2 + p.dp2) + p.day);
+        const x = bcx + (p.mx + ox) * bScale, y = bcy + (p.my + oy) * bScale;
+        const th = p.ang + (1 - a) * (p.omega * t + p.p0);
+        const amp = p.seg * bScale * (1 + (1 - a) * 0.3 * Math.sin(t * p.af + p.ap));
+        const hl = amp * 0.5, ax = Math.cos(th) * hl, ay = Math.sin(th) * hl;
+        const hue = (205 * (1 - a) + 305 * a) | 0;
+        ctx.strokeStyle = `hsla(${hue},88%,60%,${0.10 + 0.16 * a})`; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(x - ax, y - ay); ctx.lineTo(x + ax, y + ay); ctx.stroke();
+        ctx.strokeStyle = `hsla(${hue},92%,${(66 + a * 8) | 0}%,${0.5 + 0.42 * a})`; ctx.lineWidth = 1.9;
+        ctx.beginPath(); ctx.moveTo(x - ax, y - ay); ctx.lineTo(x + ax, y + ay); ctx.stroke();
+      }
+
+      // countdown ring → next brain formation
+      ctx.globalCompositeOperation = "source-over";
+      const tr = Math.max(11, Math.min(g.gw, g.gh) * 0.03);
+      const tcx = g.gx + g.gw - tr - 6, tcy = g.gy + tr + 4;
+      ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(tcx, tcy, tr, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = "hsla(305,85%,66%,0.92)"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(tcx, tcy, tr, -Math.PI / 2, -Math.PI / 2 + u * TAU); ctx.stroke();
+      ctx.fillStyle = "rgba(228,236,250,0.92)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = `600 ${Math.round(tr * 0.85)}px system-ui,sans-serif`;
+      ctx.fillText(String(Math.max(0, Math.ceil((1 - u) * CYCLE))), tcx, tcy + 0.5);
+      ctx.fillStyle = "rgba(150,165,190,0.85)"; ctx.textAlign = "right";
+      ctx.font = "500 11px system-ui,sans-serif";
+      ctx.fillText("next brain", tcx - tr - 6, tcy);
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  // ── Figure 3 variants: dismember an actual brain line-art image into vectors.
+  //    Loads the image, keeps only the bold strokes (drops faint watermarks), and
+  //    turns each edge sample into an oscillator vector. Same phase-align mechanic. ──
+  const FIGBASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+  // Coarse grid over a rendered drawing: one longer bar per occupied cell, oriented
+  // by the cell's average line direction (angles averaged mod π) → few clean bars.
+  function gridBars(d, W, H, cell, thresh) {
+    const L = (x, y) => { const i = (y * W + x) * 4; return 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; };
+    const cols = Math.ceil(W / cell), cells = new Map();
+    for (let y = 2; y < H - 2; y += 2) for (let x = 2; x < W - 2; x += 2) {
+      const gx = L(x + 2, y) - L(x - 2, y), gy = L(x, y + 2) - L(x, y - 2);
+      if (Math.hypot(gx, gy) <= thresh) continue;
+      const ang = Math.atan2(gy, gx) + Math.PI / 2;
+      const key = ((y / cell) | 0) * cols + ((x / cell) | 0);
+      let c = cells.get(key); if (!c) { c = { sx: 0, sy: 0, c2: 0, s2: 0, n: 0 }; cells.set(key, c); }
+      c.sx += x; c.sy += y; c.c2 += Math.cos(2 * ang); c.s2 += Math.sin(2 * ang); c.n++;
+    }
+    const out = [];
+    for (const c of cells.values()) if (c.n >= 2) out.push([c.sx / c.n, c.sy / c.n, 0.5 * Math.atan2(c.s2, c.c2)]);
+    return out;
+  }
+  function imageVectors(img) {
+    try {
+      const S = 224, oc = document.createElement("canvas"); oc.width = S; oc.height = S;
+      const o = oc.getContext("2d");
+      o.fillStyle = "#fff"; o.fillRect(0, 0, S, S);
+      const ar = img.width / img.height;
+      let dw = S, dh = S, dx = 0, dy = 0;
+      if (ar > 1) { dh = S / ar; dy = (S - dh) / 2; } else { dw = S * ar; dx = (S - dw) / 2; }
+      o.drawImage(img, dx, dy, dw, dh);
+      const cell = S / 24; // coarser → even fewer, longer bars
+      const bars = gridBars(o.getImageData(0, 0, S, S).data, S, S, cell, 90);
+      if (bars.length < 24) return null;
+      const seg = (cell / S) * 1.4; // longer bars → clearly oscillators
+      return bars.map((b) => [b[0] / S - 0.5, b[1] / S - 0.5, b[2], seg]);
+    } catch (e) { return null; }
+  }
+  const BRAIN_PAL = [188, 208, 266, 322, 40]; // print-like layer hues (teal→amber)
+  function brainHue(x, y) {
+    const f = (Math.sin(3.1 * x + 1.3) + Math.cos(3.6 * y - 0.7)) * 0.5;
+    const i = Math.max(0, Math.min(BRAIN_PAL.length - 1, Math.floor(((f + 1) / 2) * BRAIN_PAL.length)));
+    return BRAIN_PAL[i];
+  }
+  function textVectorsMulti(lines) {
+    try {
+      const cw = 640, lh = 120, pad = 20, ch = lh * lines.length + pad * 2;
+      const oc = document.createElement("canvas"); oc.width = cw; oc.height = ch;
+      const o = oc.getContext("2d");
+      o.fillStyle = "#fff"; o.fillRect(0, 0, cw, ch);
+      o.fillStyle = "#000"; o.textAlign = "center"; o.textBaseline = "middle";
+      let fs = Math.min(96, lh * 0.82); // one font size for every line → same letter size
+      const fits = (s) => { o.font = `800 ${s}px "Segoe UI", system-ui, sans-serif`; return lines.every((L) => o.measureText(L).width <= cw * 0.92); };
+      while (!fits(fs) && fs > 20) fs -= 3;
+      o.font = `800 ${fs}px "Segoe UI", system-ui, sans-serif`;
+      for (let i = 0; i < lines.length; i++) o.fillText(lines[i], cw / 2, pad + lh * (i + 0.5));
+      const cell = 9;
+      const bars = gridBars(o.getImageData(0, 0, cw, ch).data, cw, ch, cell, 90);
+      if (!bars.length) return null;
+      let minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+      for (const b of bars) { if (b[0] < minx) minx = b[0]; if (b[0] > maxx) maxx = b[0]; if (b[1] < miny) miny = b[1]; if (b[1] > maxy) maxy = b[1]; }
+      const ccx = (minx + maxx) / 2, ccy = (miny + maxy) / 2, norm = (maxy - miny) || 1;
+      const seg = (cell / norm) * 1.15;
+      return bars.map((b) => [(b[0] - ccx) / norm, (b[1] - ccy) / norm, b[2], seg]);
+    } catch (e) { return null; }
+  }
+  function makeBrain(url) {
+    return function (cv) {
+      const { ctx, size } = setup(cv);
+      let P = null, edges = [];
+      const mk = (ox, oy, ang, seg, hue) => {
+        const va = Math.random() * TAU;
+        return {
+          ox, oy, ang, seg: Math.max(seg, 0.006), hue,
+          fx: ox, fy: oy, vx: Math.cos(va), vy: Math.sin(va), // free position + velocity
+          omega: (0.5 + Math.random() * 1.7) * (Math.random() < 0.5 ? -1 : 1),
+          p0: Math.random() * TAU,
+          af: 0.6 + Math.random() * 0.9, ap: Math.random() * TAU,
+        };
+      };
+      const img = new Image();
+      img.onload = () => {
+        const bv = imageVectors(img);
+        if (!bv) return;
+        const parts = [];
+        const bcx0 = 0.52, bs = 0.9; // brain on the right (wide layout)
+        for (const v of bv) parts.push(mk(bcx0 + v[0] * bs, v[1] * bs, v[2], v[3] * bs, brainHue(v[0], v[1])));
+        const tv = textVectorsMulti(["Artificial", "Intelligence"]); // caption on the left (soft white)
+        if (tv) { const tcx0 = -0.62, tsB = 0.34; for (const v of tv) parts.push(mk(tcx0 + v[0] * tsB, v[1] * tsB, v[2], v[3] * tsB, -1)); }
+        // sparse connectivity: each brain node → its 2 nearest brain neighbours
+        const bi = []; for (let i = 0; i < parts.length; i++) if (parts[i].hue >= 0) bi.push(i);
+        const eset = new Set(); edges = []; const maxD2 = 0.05 * 0.05;
+        for (const i of bi) {
+          let n1 = -1, n2 = -1, d1 = 1e9, d2 = 1e9;
+          for (const j of bi) {
+            if (j === i) continue;
+            const dd = (parts[i].ox - parts[j].ox) ** 2 + (parts[i].oy - parts[j].oy) ** 2;
+            if (dd < d1) { d2 = d1; n2 = n1; d1 = dd; n1 = j; } else if (dd < d2) { d2 = dd; n2 = j; }
+          }
+          for (const [n, dd] of [[n1, d1], [n2, d2]]) {
+            if (n < 0 || dd > maxD2) continue;
+            const key = i < n ? i * 1e5 + n : n * 1e5 + i;
+            if (!eset.has(key)) { eset.add(key); edges.push([i, n]); }
+          }
+        }
+        P = parts;
+      };
+      img.src = url;
+      let t = 0, phase = "hold";
+      const CYCLE = 15;
+      return (dt) => {
+        const { w, h } = size(); t += dt;
+        const g = geoOf(w, h);
+        const bScale = Math.min(g.gw * 0.4, g.gh * 0.92);
+        const cx0 = g.gx + g.gw * 0.5, cy0 = g.gy + g.gh * 0.5;
+        let u = (((t % CYCLE) + CYCLE) % CYCLE) / CYCLE;
+        if (typeof window !== "undefined" && window.__uForce != null) u = window.__uForce;
+        // out-and-back so forming is the exact time-reverse of deforming:
+        // deform (fly out) → flip velocities → retrace home → hold.
+        let a, newPhase;
+        if (u < 0.475) { a = 1 - u / 0.475; newPhase = "out"; }        // dissolve over 1st half
+        else if (u < 0.95) { a = (u - 0.475) / 0.475; newPhase = "back"; } // re-emerge over 2nd half
+        else { a = 1; newPhase = "hold"; }                              // emerged as the bar hits full
+        if (typeof window !== "undefined" && window.__brainForm != null) a = window.__brainForm;
+        a = Math.max(0, Math.min(1, a));
+        const barLevel = Math.min(1, u / 0.95); // full exactly when the brain finishes forming
+        if (P && newPhase !== phase) {
+          if (phase === "out" && newPhase === "back") for (const p of P) { p.vx = -p.vx; p.vy = -p.vy; } // turnaround
+          if (newPhase === "hold") for (const p of P) { p.fx = p.ox; p.fy = p.oy; } // land exactly home
+          phase = newPhase;
+        }
+
+        ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.lineCap = "round";
+
+        if (P) {
+          // pass 1: constant-speed flight + bounce. Velocities are flipped at the
+          // half-cycle, so the return leg retraces the outward path (time-reversed).
+          const vmag = 0.56, step = Math.min(dt, 0.05);
+          const bX = Math.max(0.3, g.gw * 0.5 / bScale - 0.02), bY = Math.max(0.2, g.gh * 0.5 / bScale - 0.02);
+          for (const p of P) {
+            if (phase === "hold") { p.fx = p.ox; p.fy = p.oy; }
+            else {
+              let sp = Math.hypot(p.vx, p.vy); if (sp < 1e-3) { p.vx = Math.cos(p.p0); p.vy = Math.sin(p.p0); sp = 1; }
+              p.vx = p.vx / sp * vmag; p.vy = p.vy / sp * vmag;
+              p.fx += p.vx * step; p.fy += p.vy * step;
+              if (p.fx > bX) { p.fx = bX; p.vx = -Math.abs(p.vx); } else if (p.fx < -bX) { p.fx = -bX; p.vx = Math.abs(p.vx); }
+              if (p.fy > bY) { p.fy = bY; p.vy = -Math.abs(p.vy); } else if (p.fy < -bY) { p.fy = -bY; p.vy = Math.abs(p.vy); }
+            }
+            p._x = cx0 + p.fx * bScale; p._y = cy0 + p.fy * bScale;
+            p._th = p.ang + (1 - a) * (p.omega * t + p.p0);
+            p._amp = p.seg * bScale * (1 + (1 - a) * 0.3 * Math.sin(t * p.af + p.ap));
+          }
+          // connectivity lines (behind the bars); skip when a pair stretches too far
+          const maxLen2 = (0.2 * bScale) ** 2;
+          ctx.lineWidth = 1;
+          for (const [i, j] of edges) {
+            const pi = P[i], pj = P[j], dx = pi._x - pj._x, dy = pi._y - pj._y;
+            if (dx * dx + dy * dy > maxLen2) continue;
+            ctx.strokeStyle = `hsla(${pi.hue},70%,62%,${0.05 + 0.1 * a})`;
+            ctx.beginPath(); ctx.moveTo(pi._x, pi._y); ctx.lineTo(pj._x, pj._y); ctx.stroke();
+          }
+          // pass 2: oscillator bars
+          for (const p of P) {
+            const hl = p._amp * 0.5, ax = Math.cos(p._th) * hl, ay = Math.sin(p._th) * hl, x = p._x, y = p._y;
+            let wide, core;
+            if (p.hue < 0) { wide = `hsla(210,25%,85%,${0.05 + 0.12 * a})`; core = `hsla(210,30%,92%,${0.3 + 0.5 * a})`; }
+            else { wide = `hsla(${p.hue},85%,62%,${0.06 + 0.14 * a})`; core = `hsla(${p.hue},92%,${(62 + a * 8) | 0}%,${0.32 + 0.5 * a})`; }
+            ctx.strokeStyle = wide; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(x - ax, y - ay); ctx.lineTo(x + ax, y + ay); ctx.stroke();
+            ctx.strokeStyle = core; ctx.lineWidth = 2.1;
+            ctx.beginPath(); ctx.moveTo(x - ax, y - ay); ctx.lineTo(x + ax, y + ay); ctx.stroke();
+          }
+        }
+
+        // countdown bar → next brain formation (fills up to the moment it forms)
+        ctx.globalCompositeOperation = "source-over";
+        const barW = Math.min(g.gw * 0.4, 380), barH = Math.max(5, Math.min(g.gw, g.gh) * 0.014);
+        const bx = g.gx + g.gw * 0.5 - barW / 2, by = g.gy + g.gh - barH - Math.max(12, g.gh * 0.06);
+        ctx.fillStyle = "rgba(150,165,190,0.85)"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        ctx.font = "500 11px system-ui,sans-serif";
+        ctx.fillText("next emerge", bx, by - 7);
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        rr(ctx, bx, by, barW, barH, barH / 2); ctx.fill();
+        ctx.fillStyle = "hsla(305,85%,66%,0.95)";
+        rr(ctx, bx, by, Math.max(barH, barW * barLevel), barH, barH / 2); ctx.fill();
+
+        ctx.globalCompositeOperation = "source-over";
+      };
+    };
+  }
+
+  // ── Complex light dynamics: the effective-potential landscape of a rotating
+  //    (Sun–planet) system. Dense contour basin + orbit + the five Lagrange points
+  //    with librating Trojan/Greek clusters and green Coriolis-flow arrows. The
+  //    whole basin slowly revolves. ──
+  function trojanBeam(cv) {
+    const { ctx, size } = setup(cv);
+    let t = 0, off = null;
+    const d = 0.6; // planet orbit radius (world units)
+    const cluster = []; for (let i = 0; i < 24; i++) cluster.push([(Math.random() - 0.5) * 0.17, (Math.random() - 0.5) * 0.055, 0.4 + Math.random() * 0.7]);
+    const arrows = []; for (let i = 0; i < 22; i++) arrows.push((i / 22) * TAU + 0.1);
+    function buildField() {
+      const N = 150, S = 660, m1 = 1, m2 = 0.05, soft = 0.006, Om2 = (m1 + m2) / (d * d * d);
+      const pot = (x, y) => -m1 / Math.sqrt(x * x + y * y + soft) - m2 / Math.sqrt((x - d) * (x - d) + y * y + soft * 0.3) - 0.5 * Om2 * (x * x + y * y);
+      const lo = -1.15, span = 2.3, gx = (i) => lo + span * i / (N - 1);
+      const grid = new Float32Array(N * N); let mx = -1e9;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const v = pot(gx(i), gx(j)); grid[j * N + i] = v; if (isFinite(v) && v > mx) mx = v; }
+      const vlo = -3.2, vhi = mx, nL = 40, levels = [];
+      for (let l = 0; l < nL; l++) levels.push(vlo + (vhi - vlo) * Math.pow(l / (nL - 1), 1.5));
+      off = document.createElement("canvas"); off.width = S; off.height = S;
+      const o = off.getContext("2d"), toS = (x) => (x - lo) / span * S;
+      const ip = (va, vb, a, b, L) => a + (b - a) * ((L - va) / (vb - va));
+      o.lineWidth = 1;
+      for (let li = 0; li < nL; li++) {
+        const L = levels[li], f = li / (nL - 1);
+        o.strokeStyle = `rgba(${(70 + f * 40) | 0},${(120 + f * 110) | 0},${(195 - f * 70) | 0},${0.12 + 0.16 * f})`;
+        o.beginPath();
+        for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) {
+          const x0 = gx(i), x1 = gx(i + 1), y0 = gx(j), y1 = gx(j + 1);
+          const v00 = grid[j * N + i], v10 = grid[j * N + i + 1], v11 = grid[(j + 1) * N + i + 1], v01 = grid[(j + 1) * N + i];
+          let c = 0; if (v00 > L) c |= 1; if (v10 > L) c |= 2; if (v11 > L) c |= 4; if (v01 > L) c |= 8;
+          if (c === 0 || c === 15) continue;
+          const eB = [toS(ip(v00, v10, x0, x1, L)), toS(y0)], eR = [toS(x1), toS(ip(v10, v11, y0, y1, L))], eT = [toS(ip(v01, v11, x0, x1, L)), toS(y1)], eL = [toS(x0), toS(ip(v00, v01, y0, y1, L))];
+          const sg = (p, q) => { o.moveTo(p[0], p[1]); o.lineTo(q[0], q[1]); };
+          switch (c) { case 1: case 14: sg(eL, eB); break; case 2: case 13: sg(eB, eR); break; case 3: case 12: sg(eL, eR); break; case 4: case 11: sg(eR, eT); break; case 6: case 9: sg(eB, eT); break; case 7: case 8: sg(eL, eT); break; case 5: sg(eL, eB); sg(eR, eT); break; case 10: sg(eB, eR); sg(eL, eT); break; }
+        }
+        o.stroke();
+      }
+    }
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      const x0 = g.gx + g.gw * 0.05, x1 = g.gx + g.gw * 0.95, span = x1 - x0, cy = g.gy + g.gh * 0.5;
+      const A = Math.min(g.gh * 0.2, g.gw * 0.06);
+      const kk = 2 * Math.PI * 3, Om = t * 1.5, Sc = g.gh * 0.07; // 3 twists, rotate+propagate, gentle S
+      const ax = (s) => x0 + s * span, ay = (s) => cy + Sc * Math.sin((s - 0.5) * Math.PI * 1.7);
+
+      ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = "#0a0a0f"; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+
+      // trapping-potential rings at the twist nodes (scroll forward)
+      const dsN = 2 * Math.PI / kk, offN = (((Om / kk) % dsN) + dsN) % dsN;
+      for (let s = offN; s <= 1.0; s += dsN) {
+        const x = ax(s), y = ay(s);
+        for (let k = 4; k >= 1; k--) { const ry = A * 0.28 * k; ctx.strokeStyle = `rgba(255,220,140,${0.04 + 0.05 * (4 - k)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, ry * 0.4, ry, 0, 0, TAU); ctx.stroke(); }
+      }
+
+      // helix: yellow (phase 0) + blue (phase π), split into back/front for depth
+      const beam = (ph, front, lw, col) => {
+        ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = "round"; let on = false; ctx.beginPath();
+        for (let s = 0; s <= 1.0001; s += 0.004) {
+          const th = kk * s - Om + ph, depth = Math.cos(th);
+          if ((front && depth < 0) || (!front && depth >= 0)) { on = false; continue; }
+          const x = ax(s), y = ay(s) + A * Math.sin(th);
+          on ? ctx.lineTo(x, y) : (ctx.moveTo(x, y), on = true);
+        }
+        ctx.stroke();
+      };
+      beam(0, false, 2.4, "rgba(255,200,80,0.18)");
+      beam(Math.PI, false, 2.4, "rgba(90,170,255,0.18)");
+
+      // circular rotation arrows between the rings (scroll forward)
+      ctx.strokeStyle = "rgba(150,205,255,0.5)"; ctx.lineWidth = 1.4;
+      for (let s = offN + dsN * 0.5; s <= 1.0; s += dsN) {
+        const x = ax(s), y = ay(s), rx = A * 0.32, ry = A * 0.62, a1 = 2.1;
+        ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, -2.4, a1); ctx.stroke();
+        const ex = x + rx * Math.cos(a1), ey = y + ry * Math.sin(a1), an = Math.atan2(ry * Math.cos(a1), -rx * Math.sin(a1));
+        ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.cos(an - 0.5) * 6, ey - Math.sin(an - 0.5) * 6); ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.cos(an + 0.5) * 6, ey - Math.sin(an + 0.5) * 6); ctx.stroke();
+      }
+
+      // front (bright) strands over everything
+      beam(0, true, 7, "rgba(255,200,80,0.22)"); beam(0, true, 3.4, "rgba(255,225,120,0.95)"); beam(0, true, 1.5, "rgba(255,250,225,0.92)");
+      beam(Math.PI, true, 7, "rgba(90,170,255,0.22)"); beam(Math.PI, true, 3.4, "rgba(130,200,255,0.95)"); beam(Math.PI, true, 1.5, "rgba(225,245,255,0.92)");
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  // ── Complex light dynamics: a bound state in the continuum. A faint radiating
+  //    continuum fills the field (gold crests / blue troughs); a bright localized
+  //    mode sits inside it and oscillates, but its outgoing ripples cancel by
+  //    destructive interference — so it never radiates away. ──
+  function bic(cv) {
+    const { ctx, size } = setup(cv);
+    let t = 0;
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const g = geoOf(w, h);
+      const cx = g.gx + g.gw * 0.5, cy = g.gy + g.gh * 0.5;
+      const Rmax = Math.min(g.gw * 0.42, g.gh * 0.92), tilt = 0.42, om = t * 0.55;
+
+      ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = "#04060d"; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "lighter";
+
+      // faint radiating continuum (drifting bands)
+      for (let n = 0; n < 3; n++) {
+        const yy = cy + (n - 1) * g.gh * 0.3;
+        ctx.strokeStyle = "rgba(70,110,180,0.05)"; ctx.lineWidth = g.gh * 0.13;
+        ctx.beginPath(); for (let s = 0; s <= 1.0001; s += 0.02) { const x = g.gx + s * g.gw, y = yy + Math.sin(s * 20 - om * 2 + n) * g.gh * 0.03; s === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+      }
+
+      // wavefront ripples that emanate and fade before the edge (radiation cancels)
+      const nR = 20;
+      for (let n = 0; n < nR; n++) {
+        const ph = ((n / nR) + om) % 1, rad = ph * Rmax, alpha = Math.min(1, ph * 7) * (1 - ph) * (1 - ph) * 0.7;
+        if (alpha < 0.01) continue;
+        ctx.strokeStyle = `rgba(120,215,255,${alpha})`; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let a = 0; a <= 1.0001; a += 0.02) { const th = a * TAU, rr = rad * (1 + 0.05 * Math.cos(4 * th + om * 3)); const x = cx + Math.cos(th) * rr, y = cy + Math.sin(th) * rr * tilt; a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+        ctx.closePath(); ctx.stroke();
+      }
+
+      // brilliant trapped core, pulsing
+      const pulse = 0.75 + 0.25 * Math.sin(t * 2.2);
+      glow(ctx, cx, cy, Rmax * 0.22 * pulse, "rgba(90,180,255,0.28)");
+      glow(ctx, cx, cy, Rmax * 0.1, "rgba(180,235,255,0.6)");
+      glow(ctx, cx, cy, Rmax * 0.045, "rgba(255,252,245,0.98)");
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  const FACTORIES = {
+    reconfigurable, reconfigurableSmooth, reconfigurablePixels, thermalize, thermalCompute,
+    oscillators, oscillatorsWild, oscillatorsBrain, trojanBeam, bic,
+    oscBrainCircuit: makeBrain(FIGBASE + "/research/figures/brain-circuit.webp"),
+    oscBrainTop: makeBrain(FIGBASE + "/research/figures/brain-top.webp"),
+    oscBrainSide: makeBrain(FIGBASE + "/research/figures/brain-side.png"),
+  };
+
+  const active = new Set();
+  document.querySelectorAll("canvas[data-fig]").forEach((cv) => {
+    const make = FACTORIES[cv.dataset.fig];
+    if (!make) return;
+    cv._step = make(cv);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) { if (e.isIntersecting) active.add(cv); else active.delete(cv); }
+    }, { threshold: 0.05 });
+    io.observe(cv);
+  });
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    for (const cv of active) { cv._step(dt); if (REDUCE) active.delete(cv); }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+</script>

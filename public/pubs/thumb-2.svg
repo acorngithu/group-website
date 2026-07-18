@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+    <rect width="320" height="240" fill="#ffffff"/>
+    <text x="30" y="40" font-family="Arial" font-size="14" fill="#1b2432" font-weight="bold">Benchmark</text>
+    <line x1="34" y1="180" x2="290" y2="180" stroke="#c9d2df" stroke-width="1.5"/>
+    <line x1="34" y1="70" x2="34" y2="180" stroke="#c9d2df" stroke-width="1.5"/>
+    <rect x="52" y="120" width="22" height="60" rx="3" fill="#3d74ff"/><rect x="90" y="85" width="22" height="95" rx="3" fill="#7fa6ff"/><rect x="128" y="108" width="22" height="72" rx="3" fill="#3d74ff"/><rect x="166" y="50" width="22" height="130" rx="3" fill="#7fa6ff"/><rect x="204" y="70" width="22" height="110" rx="3" fill="#3d74ff"/><rect x="242" y="30" width="22" height="150" rx="3" fill="#7fa6ff"/>
+    <rect x="34" y="200" width="200" height="7" rx="3.5" fill="#d7deea"/>
+    <rect x="34" y="214" width="150" height="7" rx="3.5" fill="#d7deea"/>
+  </svg>

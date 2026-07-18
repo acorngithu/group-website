@@ -1,0 +1,510 @@
+---
+// BICFilm.astro — native, dependency-free port of the "Bound States in the
+// Continuum" film (originally a React/Babel artifact). Pure Canvas 2D + a tiny
+// scene sequencer, so it runs at 60fps with no framework, no external asset —
+// China-safe by construction. Plays only while on-screen (IntersectionObserver),
+// so it costs nothing while the lightbox is closed.
+//
+// Five scenes, driven entirely by math (no image data):
+//   Question → Continuum → Potential → Interference → Trapped  (loops, ~29.5s)
+//
+// Props:
+//   controls (default true) — show the play/scrub bar.
+//   externalCaption (default false) — render the scene narration as a normal
+//     HTML line under the canvas (page-size, crisp) instead of tiny in-canvas.
+//   hideHeader (default false) — hide the in-canvas "BOUND STATES…" header
+//     (useful when the panel already has its own title).
+const { controls = true, externalCaption = false, hideHeader = false } = Astro.props;
+---
+
+<div
+  class="bicfilm"
+  role="img"
+  aria-label="Animated explainer: a bound state in the continuum"
+  data-hide-header={hideHeader ? "1" : undefined}
+>
+  <canvas class="bicfilm-canvas"></canvas>
+  {
+    controls && (
+      <div class="bicfilm-controls">
+        <button type="button" class="bf-play" aria-label="Pause">&#10074;&#10074;</button>
+        <button type="button" class="bf-restart" aria-label="Restart">&#9198;</button>
+        <div class="bf-bar" role="slider" aria-label="Timeline" tabindex="0"><div class="bf-fill" /></div>
+        <span class="bf-time">0:00 / 0:29</span>
+      </div>
+    )
+  }
+  {externalCaption && <p class="bicfilm-cap" aria-live="polite" />}
+</div>
+
+<script is:inline>
+  (function () {
+    var W = 1920, H = 1080;
+    var P = {
+      bg: "#07080d",
+      cyan: "#37c6e0", cyanDim: "#3592a6", violet: "#b489f0", amber: "#e0b46f",
+      ink: "rgba(232,238,248,0.92)", faint: "rgba(232,238,248,0.42)",
+      faint2: "rgba(232,238,248,0.22)", line: "rgba(232,238,248,0.14)"
+    };
+    var MONO = "'IBM Plex Mono', ui-monospace, 'Cascadia Code', Consolas, monospace";
+    var DISP = "'Space Grotesk', system-ui, -apple-system, sans-serif";
+    var WAVE = { x0: 470, x1: 1780, baseY: 475, amp: 150 };
+    var POT = { x0: 470, x1: 1780, baseY: 770, amp: 88 };
+    var TAGSCALE = 1.7; // in-canvas label size multiplier (readable when scaled to panel width)
+    var ZOOM = 1.15;    // enlarge the plotted content within the box
+    var SCENES = [
+      { name: "Continuum", dur: 6, cap: "A state whose energy lies in the continuum should radiate away — its wave leaks off to infinity." },
+      { name: "Potential", dur: 6, cap: "A potential that oscillates, generating a spectrum of reflections." },
+      { name: "Interference", dur: 7, cap: "Each ripple scatters the outgoing wave back on itself — the escaping waves interfere away." },
+      { name: "Trapped", dur: 6.5, cap: "What remains is a perfectly localized state — bound, at an energy that should have set it free." }
+    ];
+    var TOTAL = 0;
+    for (var si = 0; si < SCENES.length; si++) TOTAL += SCENES[si].dur;
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function fadeUp(lt, delay, dur) { return easeOutCubic(clamp((lt - delay) / dur, 0, 1)); }
+    function potFn(u) { return Math.cos(u * 13) / (1 + Math.pow(u / 0.5, 2)); }
+
+    function initFilm(root) {
+      var canvas = root.querySelector(".bicfilm-canvas");
+      var ctx = canvas.getContext("2d");
+      var playBtn = root.querySelector(".bf-play");
+      var restartBtn = root.querySelector(".bf-restart");
+      var bar = root.querySelector(".bf-bar");
+      var fill = root.querySelector(".bf-fill");
+      var timeEl = root.querySelector(".bf-time");
+      var capEl = root.querySelector(".bicfilm-cap");   // present => caption rendered as HTML
+      var hideHeader = root.dataset.hideHeader === "1";
+      var lastCapText = null;
+
+      var scale = 1, cssW = 0, cssH = 0;
+      var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var t = 0, playing = !reduced, last = null, raf = null;
+      if (reduced) t = TOTAL - SCENES[SCENES.length - 1].dur + 3; // rest on the final (Trapped) scene
+
+      function resize() {
+        var r = canvas.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        cssW = r.width; cssH = r.height;
+        canvas.width = Math.round(r.width * dpr);
+        canvas.height = Math.round(r.height * dpr);
+        // fit 1920x1080 design box into the canvas (uniform scale, centered)
+        scale = Math.min(canvas.width / W, canvas.height / H);
+        draw();
+      }
+
+      // ── drawing primitives (design coordinates) ───────────────────────────
+      function alpha(o) { ctx.globalAlpha = clamp(o, 0, 1); }
+      function reset() { ctx.globalAlpha = 1; ctx.setLineDash([]); }
+
+      function samplePath(fn, R, N) {
+        N = N || 240;
+        ctx.beginPath();
+        for (var i = 0; i < N; i++) {
+          var u = -1 + (2 * i) / (N - 1);
+          var x = R.x0 + (i / (N - 1)) * (R.x1 - R.x0);
+          var y = R.baseY - R.amp * fn(u);
+          if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        }
+      }
+      function curve(fn, R, color, w, glow, dash) {
+        w = w || 3; glow = (glow == null) ? 0.55 : glow;
+        ctx.strokeStyle = color; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.setLineDash(dash || []);
+        samplePath(fn, R); ctx.lineWidth = w + 10; alpha(glow * 0.28); ctx.stroke();
+        samplePath(fn, R); ctx.lineWidth = w + 4; alpha(glow * 0.5); ctx.stroke();
+        samplePath(fn, R); ctx.lineWidth = w; alpha(1); ctx.stroke();
+        reset();
+      }
+      function glowDot(cx, cy, r, color, glow) {
+        glow = (glow == null) ? 0.5 : glow;
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(cx, cy, r + 7, 0, 6.2832); alpha(glow * 0.3); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, 6.2832); alpha(glow * 0.5); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.2832); alpha(1); ctx.fill();
+        reset();
+      }
+      function baseline(R, o) {
+        ctx.strokeStyle = P.line; ctx.lineWidth = 1.5; alpha(o == null ? 1 : o);
+        ctx.beginPath(); ctx.moveTo(R.x0, R.baseY); ctx.lineTo(R.x1, R.baseY); ctx.stroke(); reset();
+      }
+      function setFont(size, family, weight, spacing) {
+        ctx.font = (weight || 400) + " " + size + "px " + family;
+        try { ctx.letterSpacing = (spacing || 0) + "px"; } catch (e) {}
+      }
+      function tag(x, y, text, color, o, size, anchor, spacing) {
+        if (o <= 0.001) return;
+        var fs = (size || 22) * TAGSCALE;
+        setFont(fs, MONO, 400, spacing == null ? fs * 0.04 : spacing);
+        ctx.fillStyle = color || P.faint;
+        ctx.textAlign = anchor === "middle" ? "center" : anchor === "end" ? "right" : "left";
+        ctx.textBaseline = "top"; alpha(o);
+        ctx.fillText(text, x, y); reset();
+        try { ctx.letterSpacing = "0px"; } catch (e) {}
+      }
+      function line(x1, y1, x2, y2, color, w, o, dash) {
+        ctx.strokeStyle = color; ctx.lineWidth = w; alpha(o == null ? 1 : o);
+        ctx.setLineDash(dash || []);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); reset();
+      }
+      function arrowsFill(pathFn, color, w, o) {
+        ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        alpha(o); pathFn(); reset();
+      }
+
+      // ── shared chrome ─────────────────────────────────────────────────────
+      function header(lt) {
+        if (hideHeader) return;
+        var o = fadeUp(lt, 0.1, 0.7) * 0.62;
+        if (o <= 0.001) return;
+        setFont(22, MONO, 400, 22 * 0.42);
+        ctx.fillStyle = P.ink; ctx.textAlign = "center"; ctx.textBaseline = "top"; alpha(o);
+        ctx.fillText("BOUND STATES IN THE CONTINUUM", W / 2 + 22 * 0.21, 58);
+        reset(); try { ctx.letterSpacing = "0px"; } catch (e) {}
+      }
+      // caption as a crisp, page-size HTML line under the canvas
+      function htmlCaption(text, lt, dur) {
+        var o = 0;
+        if (text) {
+          var inO = fadeUp(lt, 0.35, 0.7);
+          var outO = 1 - clamp((lt - (dur - 0.5)) / 0.5, 0, 1);
+          o = Math.min(inO, outO);
+        }
+        if (text !== lastCapText) { capEl.textContent = text || ""; lastCapText = text; }
+        capEl.style.opacity = text ? o.toFixed(3) : "0";
+      }
+      function caption(text, lt, dur) {
+        if (capEl) { htmlCaption(text, lt, dur); return; }
+        if (!text) return;
+        var inO = fadeUp(lt, 0.35, 0.7);
+        var outO = 1 - clamp((lt - (dur - 0.5)) / 0.5, 0, 1);
+        var o = Math.min(inO, outO);
+        if (o <= 0.001) return;
+        setFont(44, DISP, 300, 0);
+        ctx.fillStyle = P.ink; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        var words = text.split(" "), lines = [], cur = "";
+        for (var i = 0; i < words.length; i++) {
+          var test = cur ? cur + " " + words[i] : words[i];
+          if (ctx.measureText(test).width > 1360 && cur) { lines.push(cur); cur = words[i]; }
+          else cur = test;
+        }
+        if (cur) lines.push(cur);
+        alpha(o);
+        var lh = 62, y0 = H - 96 - (lines.length - 1) * lh + (1 - inO) * 14;
+        for (var k = 0; k < lines.length; k++) ctx.fillText(lines[k], W / 2, y0 + k * lh);
+        reset();
+      }
+      function energyDiagram(lt, trapped) {
+        var ax = 200, top = 210, bot = 758, thr = 585, eY = 475, bx0 = 168, bx1 = 300;
+        var o = fadeUp(lt, 0.15, 0.8);
+        if (o <= 0.001) return;
+        var eGlow = trapped ? 0.6 + 0.25 * Math.sin(lt * 2) : 0.4;
+        var axC = "rgba(216,226,240,0.78)";   // brighter axis / threshold
+        var lvC = "rgba(216,226,240,0.55)";   // brighter discrete levels
+        // continuum shading + level lines (more visible)
+        ctx.fillStyle = P.cyan; alpha(0.13 * o); ctx.fillRect(bx0, top, bx1 - bx0, thr - top); reset();
+        for (var i = 0; i < 5; i++) {
+          var yy = top + 10 + i * ((thr - top - 20) / 4);
+          line(bx0, yy, bx1, yy, P.cyan, 1.4, 0.2 * o);
+        }
+        // energy axis + arrowhead
+        line(ax, top - 6, ax, bot, axC, 2.2, o);
+        ctx.fillStyle = axC; alpha(o);
+        ctx.beginPath(); ctx.moveTo(ax, top - 18); ctx.lineTo(ax - 7, top - 4); ctx.lineTo(ax + 7, top - 4); ctx.closePath(); ctx.fill(); reset();
+        // E = 0 threshold
+        line(bx0, thr, bx1, thr, axC, 2.2, o, [6, 6]);
+        // discrete bound levels
+        var lv = [638, 690, 728];
+        for (var j = 0; j < lv.length; j++) line(ax - 34, lv[j], ax + 34, lv[j], lvC, 3.6, (0.95 - j * 0.12) * o);
+        // the state's energy (inside the continuum) + dot
+        line(bx0, eY, bx1 + 4, eY, P.violet, 3, o, [7, 5]);
+        glowDot(bx1 + 4, eY, trapped ? 5.5 : 4.5, P.violet, eGlow + 0.4);
+      }
+      function mixedCentered(segments, cx, y, size, weight) {
+        setFont(size, DISP, weight || 300, 0);
+        ctx.textBaseline = "top";
+        var total = 0, i;
+        for (i = 0; i < segments.length; i++) total += ctx.measureText(segments[i].t).width;
+        var x = cx - total / 2;
+        ctx.textAlign = "left";
+        for (i = 0; i < segments.length; i++) {
+          ctx.fillStyle = segments[i].c;
+          ctx.fillText(segments[i].t, x, y);
+          x += ctx.measureText(segments[i].t).width;
+        }
+      }
+
+      // ── scenes ────────────────────────────────────────────────────────────
+      function drawContinuum(lt, progress, dur, scene) {
+        var tt = easeInOutCubic(progress);
+        var width = lerp(0.14, 1.35, tt), peak = 0.14 / width, phase = lt * 6.5;
+        var fn = function (u) { return peak * Math.exp(-Math.pow(u / width, 2)) * Math.cos(u * 22 - phase); };
+        var slab = function (u) { return -0.9 * 0.5 * (Math.tanh((0.42 - Math.abs(u)) / 0.05) + 1); };
+        var escO = clamp((progress - 0.45) / 0.3, 0, 1) * 0.7;
+        energyDiagram(lt);
+        baseline(WAVE); curve(fn, WAVE, P.cyan, 3, 0.55);
+        baseline(POT, 0.6); curve(slab, POT, P.amber, 3, 0.45);
+        if (escO > 0.02) {
+          arrowsFill(function () {
+            ctx.beginPath();
+            ctx.moveTo(WAVE.x1 - 120, WAVE.baseY); ctx.lineTo(WAVE.x1 - 30, WAVE.baseY);
+            ctx.moveTo(WAVE.x1 - 55, WAVE.baseY - 11); ctx.lineTo(WAVE.x1 - 30, WAVE.baseY); ctx.lineTo(WAVE.x1 - 55, WAVE.baseY + 11);
+            ctx.moveTo(WAVE.x0 + 120, WAVE.baseY); ctx.lineTo(WAVE.x0 + 30, WAVE.baseY);
+            ctx.moveTo(WAVE.x0 + 55, WAVE.baseY - 11); ctx.lineTo(WAVE.x0 + 30, WAVE.baseY); ctx.lineTo(WAVE.x0 + 55, WAVE.baseY + 11);
+            ctx.stroke();
+          }, P.cyanDim, 2.5, escO);
+        }
+        header(lt);
+        tag(158, 148, "continuum", P.cyan, fadeUp(lt, 0.3, 0.8) * 0.8, 22);
+        tag(310, 462, "E > 0", P.violet, fadeUp(lt, 0.5, 0.8), 24);
+        tag(310, 572, "E = 0", P.faint, fadeUp(lt, 0.5, 0.8), 22);
+        tag(WAVE.x1 - 20, WAVE.baseY - 74, "→ ∞", P.cyanDim, escO, 30, "end");
+        tag(432, POT.baseY - 14, "V(x)", P.amber, fadeUp(lt, 0.4, 0.8), 26, "end");
+        tag(POT.x1, POT.baseY + 30, "slab waveguide", P.amber, fadeUp(lt, 0.6, 0.8), 24, "end");
+        caption(scene.cap, lt, dur);
+      }
+      function drawQuestion(lt, progress, dur) {
+        var bandO = fadeUp(lt, 0.1, 1.0) * 0.5, phase = lt * 1.5;
+        var fn = function (u) { return 0.10 * Math.cos(u * 26 - phase); };
+        var R = { x0: 260, x1: 1660, baseY: 740, amp: 90 };
+        if (bandO > 0.01) {
+          var grad = ctx.createLinearGradient(R.x0, 0, R.x1, 0);
+          grad.addColorStop(0, "rgba(55,198,224,0)");
+          grad.addColorStop(0.5, "rgba(55,198,224,0.5)");
+          grad.addColorStop(1, "rgba(55,198,224,0)");
+          ctx.strokeStyle = grad; ctx.lineWidth = 2.5; ctx.lineCap = "round"; alpha(bandO);
+          samplePath(fn, R, 200); ctx.stroke(); reset();
+        }
+        var o1 = fadeUp(lt, 0.2, 0.7);
+        tag(W / 2, 372, "VON NEUMANN & WIGNER · 1929", P.violet, o1, 24, "middle", 24 * 0.4);
+        var o2 = fadeUp(lt, 0.5, 0.9), dy = (1 - o2) * 18;
+        alpha(o2);
+        mixedCentered([{ t: "Can a state stay ", c: P.ink }, { t: "bound", c: P.cyan }], W / 2, 452 + dy, 82, 300);
+        mixedCentered([{ t: "while its energy lies ", c: P.ink }, { t: "in the continuum?", c: P.violet }], W / 2, 452 + 92 + dy, 82, 300);
+        reset();
+      }
+      function drawPotential(lt, progress, dur, scene) {
+        var reveal = lerp(0.05, 1.12, easeOutCubic(clamp(progress / 0.75, 0, 1)));
+        var vfn = function (u) { return (Math.abs(u) <= reveal ? potFn(u) : 0); };
+        var wfn = function (u) { return 0.5 * Math.exp(-Math.pow(u / 0.9, 2)) * Math.cos(u * 22); };
+        energyDiagram(lt);
+        baseline(WAVE); curve(wfn, WAVE, P.cyan, 3, 0.4);
+        baseline(POT, 0.6); curve(vfn, POT, P.amber, 3, 0.5);
+        header(lt);
+        tag(158, 148, "continuum", P.cyan, 0.65, 22);
+        tag(WAVE.x0, WAVE.baseY - 190, "ψ(x)", P.cyan, fadeUp(lt, 0.3, 0.7), 28);
+        tag(432, POT.baseY - 14, "V(x)", P.amber, fadeUp(lt, 0.6, 0.8), 26, "end");
+        tag(POT.x1, POT.baseY + 118, "oscillating potential", P.amber, fadeUp(lt, 0.9, 0.8), 24, "end");
+        caption(scene.cap, lt, dur);
+      }
+      function drawInterference(lt, progress, dur, scene) {
+        var tt = easeInOutCubic(progress);
+        var w = lerp(1.9, 0.42, tt), amp = lerp(0.28, 1.0, tt), phase = lt * 5 * (1 - tt);
+        var wfn = function (u) { return amp * Math.cos(u * 22 - phase) / (1 + Math.pow(u / w, 2)); };
+        var ghostO = (1 - tt) * 0.5;
+        var gfn = function (u) { return 0.3 * Math.cos(u * 22 - lt * 7) * Math.exp(-Math.pow(Math.abs(u) - Math.min(1, lt * 0.5), 2) / 0.05); };
+        var arrowO = clamp((progress - 0.2) / 0.3, 0, 1) * (1 - clamp((progress - 0.75) / 0.2, 0, 1));
+        var ripX = [0.28, -0.28, 0.52, -0.52];
+        energyDiagram(lt);
+        baseline(WAVE);
+        if (ghostO > 0.02) curve(gfn, WAVE, P.cyanDim, 2, 0.3);
+        curve(wfn, WAVE, P.cyan, 3, 0.55);
+        if (arrowO > 0.02) {
+          arrowsFill(function () {
+            ctx.beginPath();
+            for (var i = 0; i < ripX.length; i++) {
+              var u = ripX[i], dir = u > 0 ? -1 : 1;
+              var x = WAVE.x0 + (u + 1) / 2 * (WAVE.x1 - WAVE.x0), y = WAVE.baseY - 210;
+              ctx.moveTo(x - dir * 44, y); ctx.lineTo(x, y);
+              ctx.moveTo(x - dir * 14, y - 10); ctx.lineTo(x, y); ctx.lineTo(x - dir * 14, y + 10);
+            }
+            ctx.stroke();
+          }, P.amber, 2.5, arrowO);
+        }
+        baseline(POT, 0.6); curve(potFn, POT, P.amber, 3, 0.45);
+        header(lt);
+        tag(158, 148, "continuum", P.cyan, 0.65, 22);
+        tag(W / 2, WAVE.baseY - 235, "reflected → cancelled", P.amber, arrowO, 32, "middle");
+        tag(432, POT.baseY - 14, "V(x)", P.amber, 0.7, 26, "end");
+        caption(scene.cap, lt, dur);
+      }
+      function drawTrapped(lt, progress, dur, scene) {
+        var breath = 1 + 0.025 * Math.sin(lt * 1.6);
+        var wfn = function (u) { return breath * Math.cos(u * 22) / (1 + Math.pow(u / 0.42, 2)); };
+        energyDiagram(lt, true);
+        baseline(WAVE);
+        curve(potFn, POT, P.amber, 2.5, 0.35);
+        baseline(POT, 0.5);
+        curve(wfn, WAVE, P.cyan, 3.5, 0.65);
+        header(lt);
+        tag(158, 148, "continuum", P.cyan, 0.65, 22);
+        tag(310, 462, "E > 0", P.violet, 0.9, 24);
+        tag(WAVE.x0, WAVE.baseY - 200, "A bounded state in the continuous spectrum", P.cyan, fadeUp(lt, 0.4, 0.8), 28);
+        tag(432, POT.baseY - 14, "V(x)", P.amber, 0.6, 26, "end");
+        caption(scene.cap, lt, dur);
+      }
+
+      function sceneAt(time) {
+        var acc = 0;
+        for (var i = 0; i < SCENES.length; i++) {
+          if (time < acc + SCENES[i].dur || i === SCENES.length - 1)
+            return { scene: SCENES[i], lt: time - acc, dur: SCENES[i].dur };
+          acc += SCENES[i].dur;
+        }
+      }
+
+      function fmt(s) {
+        var m = Math.floor(s / 60), r = Math.floor(s % 60);
+        return m + ":" + (r < 10 ? "0" : "") + r;
+      }
+
+      function draw() {
+        if (!canvas.width) return;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = P.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // zoom the design content about its centre so the spectrum fills more
+        // of the box (the header/caption margins are now empty)
+        var s2 = scale * ZOOM;
+        var ox = (canvas.width - W * s2) / 2, oy = (canvas.height - H * s2) / 2;
+        ctx.setTransform(s2, 0, 0, s2, ox, oy);
+        var s = sceneAt(t), p = s.lt / s.dur;
+        if (s.scene.name === "Question") drawQuestion(s.lt, p, s.dur, s.scene);
+        else if (s.scene.name === "Continuum") drawContinuum(s.lt, p, s.dur, s.scene);
+        else if (s.scene.name === "Potential") drawPotential(s.lt, p, s.dur, s.scene);
+        else if (s.scene.name === "Interference") drawInterference(s.lt, p, s.dur, s.scene);
+        else drawTrapped(s.lt, p, s.dur, s.scene);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        if (fill) fill.style.width = (100 * t / TOTAL) + "%";
+        if (timeEl) timeEl.textContent = fmt(t) + " / " + fmt(TOTAL);
+      }
+
+      function tick(ts) {
+        if (last == null) last = ts;
+        var dt = (ts - last) / 1000; last = ts;
+        if (dt > 0.1) dt = 0.1;
+        if (playing) { t += dt; if (t >= TOTAL) t -= TOTAL; }
+        draw();
+        raf = requestAnimationFrame(tick);
+      }
+      function start() { if (!raf) { last = null; raf = requestAnimationFrame(tick); } }
+      function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
+      // controls (optional — absent when the film is embedded as a figure)
+      function setPlaying(v) {
+        playing = v;
+        if (playBtn) {
+          playBtn.innerHTML = v ? "&#10074;&#10074;" : "&#9654;";
+          playBtn.setAttribute("aria-label", v ? "Pause" : "Play");
+        }
+      }
+      if (playBtn) playBtn.addEventListener("click", function () { setPlaying(!playing); });
+      if (restartBtn) restartBtn.addEventListener("click", function () { t = 0; draw(); });
+      function seekFromEvent(e) {
+        var r = bar.getBoundingClientRect();
+        var x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        t = clamp(x / r.width, 0, 0.999) * TOTAL; draw();
+      }
+      if (bar) {
+        bar.addEventListener("pointerdown", function (e) { seekFromEvent(e); bar.setPointerCapture(e.pointerId); });
+        bar.addEventListener("pointermove", function (e) { if (e.buttons) seekFromEvent(e); });
+        bar.addEventListener("keydown", function (e) {
+          if (e.key === "ArrowLeft") { t = clamp(t - 1, 0, TOTAL); draw(); }
+          else if (e.key === "ArrowRight") { t = clamp(t + 1, 0, TOTAL); draw(); }
+          else if (e.key === " " || e.key === "Enter") { e.preventDefault(); setPlaying(!playing); }
+        });
+      }
+      if (reduced) setPlaying(false);
+
+      // play only while visible; free the loop when the lightbox is closed
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (es) {
+          for (var i = 0; i < es.length; i++) {
+            if (es[i].isIntersecting) { resize(); start(); } else stop();
+          }
+        }, { threshold: 0.02 }).observe(canvas);
+      } else { resize(); start(); }
+      window.addEventListener("resize", resize);
+      // first paint even if IO is late
+      requestAnimationFrame(resize);
+    }
+
+    function boot() {
+      var nodes = document.querySelectorAll(".bicfilm");
+      for (var i = 0; i < nodes.length; i++) {
+        if (!nodes[i].dataset.bfInit) { nodes[i].dataset.bfInit = "1"; initFilm(nodes[i]); }
+      }
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+    else boot();
+  })();
+</script>
+
+<style>
+  .bicfilm {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .bicfilm-canvas {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    display: block;
+    border-radius: 12px;
+    background: #07080d;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(232, 238, 248, 0.06);
+  }
+  /* scene narration, rendered at page-text size below the film */
+  .bicfilm-cap {
+    margin: 0.85rem 0 0;
+    text-align: center;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--ink);
+    min-height: 3.4em;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    text-wrap: pretty;
+  }
+  .bicfilm-controls {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 1rem 0.7rem;
+    background: linear-gradient(to top, rgba(7, 8, 13, 0.9), rgba(7, 8, 13, 0));
+    font: 400 0.8rem/1 var(--sans, system-ui, sans-serif);
+    color: rgba(232, 238, 248, 0.75);
+  }
+  .bicfilm-controls button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    background: rgba(232, 238, 248, 0.06);
+    color: rgba(232, 238, 248, 0.85);
+    border: 1px solid rgba(232, 238, 248, 0.16);
+    border-radius: 7px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+  }
+  .bicfilm-controls button:hover,
+  .bicfilm-controls button:focus-visible { border-color: rgba(232, 238, 248, 0.4); background: rgba(232, 238, 248, 0.12); outline: none; }
+  .bf-bar {
+    flex: 1 1 auto;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(232, 238, 248, 0.16);
+    cursor: pointer;
+    position: relative;
+    touch-action: none;
+  }
+  .bf-bar:focus-visible { outline: 2px solid #37c6e0; outline-offset: 3px; }
+  .bf-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #37c6e0; border-radius: 3px; }
+  .bf-time { flex: 0 0 auto; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+</style>

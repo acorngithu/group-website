@@ -11,19 +11,26 @@ const initials = person.nameEn
 // Prefix the base path (e.g. "/group-website") so photos resolve on a
 // GitHub Pages *project* site. Data keeps its bare "/people/…" paths.
 const photoSrc = import.meta.env.BASE_URL.replace(/\/$/, "") + person.photo;
+const profileHref = person.profile
+  ? (/^https?:\/\//.test(person.profile)
+      ? person.profile
+      : import.meta.env.BASE_URL.replace(/\/$/, "") + person.profile)
+  : undefined;
 ---
 
 <article class="person">
-  <div class="portrait">
-    {/* initials sit underneath; if the photo is missing, onerror hides the img and reveals them */}
-    <span class="fallback">{initials}</span>
-    <img
-      src={photoSrc}
-      alt={`Portrait of ${person.nameEn}`}
-      loading="lazy"
-      onerror="this.style.display='none'"
-    />
-  </div>
+  {profileHref ? (
+    <a class="portrait" href={profileHref} aria-label={`${person.nameEn} — full profile`}>
+      <span class="fallback">{initials}</span>
+      <img src={photoSrc} alt={`Portrait of ${person.nameEn}`} loading="lazy" onerror="this.style.display='none'" />
+    </a>
+  ) : (
+    <div class="portrait">
+      {/* initials sit underneath; if the photo is missing, onerror hides the img and reveals them */}
+      <span class="fallback">{initials}</span>
+      <img src={photoSrc} alt={`Portrait of ${person.nameEn}`} loading="lazy" onerror="this.style.display='none'" />
+    </div>
+  )}
 
   <h2 class="name">{person.nameEn}</h2>
   {person.nameNative && <div class="name-native">{person.nameNative}</div>}
@@ -33,6 +40,7 @@ const photoSrc = import.meta.env.BASE_URL.replace(/\/$/, "") + person.photo;
     {person.website && (
       <a class="site" href={person.website} target="_blank" rel="noopener">Website</a>
     )}
+    {profileHref && <a class="profile" href={profileHref}>Full profile &rarr;</a>}
   </div>
 </article>
 
@@ -41,6 +49,8 @@ const photoSrc = import.meta.env.BASE_URL.replace(/\/$/, "") + person.photo;
 
   /* fixed-ratio frame; the image keeps its OWN aspect ratio via object-fit */
   .portrait {
+    display: block;
+    text-decoration: none;
     position: relative;
     width: 100%;
     aspect-ratio: 4 / 5;
@@ -100,6 +110,7 @@ const photoSrc = import.meta.env.BASE_URL.replace(/\/$/, "") + person.photo;
   }
   .meta a:hover, .meta a:focus-visible { color: var(--ink); border-color: var(--ink); outline: none; }
   .meta .site::after { content: " ↗"; color: var(--accent); font-size: 0.82em; }
+  .meta .profile { color: var(--accent); font-weight: 500; }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>

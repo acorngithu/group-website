@@ -20,15 +20,17 @@ export interface Person {
   website?: string;
   photo: string; // path under /public, e.g. "/people/jane-doe.jpg"
   role?: Role;
+  profile?: string; // optional link to a standout profile page, e.g. "/pi"
 }
 
 export const people: Person[] = [
   {
     nameEn: "Fan O. Wu",
     nameNative: "吴凡",
-    email: "wufan@westlake.edu",
-    photo: "/people/jane-doe.jpg",
+    email: "wufan@westlake.edu.cn",
+    photo: "/people/fan-wu.png",
     role: "pi",
+    profile: "/pi",
   },
   {
     nameEn: "Amina Hassan",
@@ -44,14 +46,14 @@ export const people: Person[] = [
     email: "k.tanaka@university.edu",
     website: "https://tanaka-lab.example.com",
     photo: "/people/kenji-tanaka.jpg",
-    role: "phd",
+    role: "postdoc",
   },
   {
     nameEn: "Mei Lin",
     nameNative: "林梅",
     email: "mei.lin@university.edu",
     photo: "/people/mei-lin.jpg",
-    role: "msc",
+    role: "postdoc",
   },
 
   // ── add more people below ──

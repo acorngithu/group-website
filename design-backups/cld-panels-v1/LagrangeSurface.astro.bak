@@ -1,0 +1,459 @@
+---
+// LagrangeSurface.astro
+// Rotating 3D surface of the effective potential (circular restricted
+// three-body problem, co-rotating frame) with L1–L5 marked.
+// Self-contained: three.js r128 is loaded from CDN, no npm deps.
+//
+// Usage:
+//   import LagrangeSurface from '../components/LagrangeSurface.astro';
+//   <LagrangeSurface />
+//   <LagrangeSurface mu={0.03} speed={0.6} tilt={40} height={470} />
+//
+// Multiple instances on one page are supported.
+
+interface Props {
+  mu?: number;     // planet/total mass ratio, 0.01–0.15
+  speed?: number;  // rotation speed, rad/s in the animation
+  tilt?: number;   // camera elevation in degrees, 15–80
+  height?: number; // canvas height in px
+}
+
+const { mu = 0.05, speed = 0.4, tilt = 34, height = 470 } = Astro.props;
+// Self-hosted three.js (China-safe: no external CDN).
+const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.min.js";
+---
+
+<div
+  class="lagrange-surface"
+  data-mu={mu}
+  data-speed={speed}
+  data-tilt={tilt}
+  data-height={height}
+>
+  <div class="ls-stage"></div>
+  <div class="ls-controls">
+    <button class="ls-play" type="button" aria-label="Pause">&#10074;&#10074;</button>
+    <label class="ls-toggle"><input class="ls-traj" type="checkbox" checked /> Trapped-planet trajectory in lab frame</label>
+  </div>
+  <div class="ls-legend">
+    <span><i class="ls-dot ls-stable"></i> L4, L5 — stable (a minor planet stays trapped here)</span>
+    <span><i class="ls-dot ls-unstable"></i> L1, L2, L3 — unstable</span>
+  </div>
+</div>
+
+<style>
+  .lagrange-surface {
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    color: #9fb0c6;
+  }
+  .ls-toggle { flex: 0 0 auto; cursor: pointer; }
+  .ls-traj { accent-color: #378add; vertical-align: -1px; }
+  .ls-stage {
+    background: #05070d;
+    border-radius: 12px;
+    line-height: 0;
+    isolation: isolate;
+    contain: paint;
+  }
+  /* Round the canvas itself instead of clipping it with an overflow:hidden
+     mask layer, and promote it to its own compositor layer (translateZ). A
+     rounded clip over a continuously-animating WebGL canvas makes the browser
+     re-tile the region during scroll and can composite a stale tile — the
+     duplicated/torn band. Its own layer scrolls atomically and fixes that. */
+  .ls-stage canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  .ls-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .ls-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 130px;
+  }
+  .ls-controls input[type='range'] { flex: 1; accent-color: #378add; }
+  .ls-play {
+    width: 40px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11px;
+    color: inherit;
+  }
+  .ls-play:hover { background: rgba(128, 128, 128, 0.12); }
+  .ls-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+  .ls-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    vertical-align: -1px;
+  }
+  .ls-stable { background: #5dcaa5; }
+  .ls-unstable { background: #f0997b; }
+</style>
+
+<script is:inline src={threeSrc}></script>
+<script is:inline>
+  (function () {
+    if (window.__lagrangeSurfaceInit) return;
+    window.__lagrangeSurfaceInit = true;
+
+    function initLagrangeSurface(root) {
+      var THREE = window.THREE;
+      if (!THREE) return;
+
+      var EXT = 1.75, TS = 640, K = 45;
+      var Ucut = -2.4, W = 0.18, ZS = 0.55;
+      var mu = parseFloat(root.dataset.mu) || 0.05;
+      var speed = parseFloat(root.dataset.speed) || 0.4;
+      var tilt = ((parseFloat(root.dataset.tilt) || 34) * Math.PI) / 180;
+      var CH = parseInt(root.dataset.height, 10) || 470;
+      var theta = 0, UL4 = 0, Lpts = [];
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var playing = !reduced;
+
+      function pot(x, y, m) {
+        var r1 = Math.max(Math.hypot(x + m, y), 0.035);
+        var r2 = Math.max(Math.hypot(x - 1 + m, y), 0.025);
+        return -(1 - m) / r1 - m / r2 - (x * x + y * y) / 2;
+      }
+      function zval(x, y) {
+        var U = pot(x, y, mu);
+        var t = (U - Ucut) / W;
+        var soft = t > 30 ? U : Ucut + W * Math.log(1 + Math.exp(t));
+        return (soft - UL4) * ZS;
+      }
+      function gAxis(x, m) {
+        var r1 = Math.abs(x + m), r2 = Math.abs(x - 1 + m);
+        return ((1 - m) * (x + m)) / (r1 * r1 * r1) + (m * (x - 1 + m)) / (r2 * r2 * r2) - x;
+      }
+      function bisect(a, b, m) {
+        var fa = gAxis(a, m);
+        for (var i = 0; i < 90; i++) {
+          var mid = (a + b) / 2, fm = gAxis(mid, m);
+          if ((fa > 0) === (fm > 0)) { a = mid; fa = fm; } else { b = mid; }
+        }
+        return (a + b) / 2;
+      }
+      function findLpts(m) {
+        var e = 1e-6;
+        return [
+          { n: 'L1', x: bisect(-m + e, 1 - m - e, m), y: 0, st: 0 },
+          { n: 'L2', x: bisect(1 - m + e, 3, m), y: 0, st: 0 },
+          { n: 'L3', x: bisect(-3, -m - e, m), y: 0, st: 0 },
+          { n: 'L4', x: 0.5 - m, y: Math.sqrt(3) / 2, st: 1 },
+          { n: 'L5', x: 0.5 - m, y: -Math.sqrt(3) / 2, st: 1 }
+        ];
+      }
+
+      var texCv = document.createElement('canvas');
+      texCv.width = TS; texCv.height = TS;
+      var tctx = texCv.getContext('2d');
+      function buildTexture() {
+        var C2 = TS / 2, sc = C2 / EXT;
+        var band = new Int16Array(TS * TS);
+        var uarr = new Float32Array(TS * TS);
+        for (var j = 0; j < TS; j++) {
+          var y = (j - C2) / sc;
+          for (var i = 0; i < TS; i++) {
+            var x = (i - C2) / sc;
+            var U = pot(x, y, mu);
+            var k = j * TS + i;
+            uarr[k] = U;
+            band[k] = Math.floor(K * Math.log(-U));
+          }
+        }
+        var img = tctx.createImageData(TS, TS);
+        var d = img.data;
+        for (j = 0; j < TS; j++) {
+          for (i = 0; i < TS; i++) {
+            k = j * TS + i;
+            U = uarr[k];
+            var ridge = Math.exp(-Math.pow((U - UL4) / 0.06, 2));
+            var depth = Math.max(0, Math.min(1, (U + 3) / (UL4 + 3)));
+            var r = 8 + 14 * depth, g = 12 + 20 * depth + 42 * ridge, b = 24 + 36 * depth + 14 * ridge;
+            var edge =
+              (i < TS - 1 && band[k] !== band[k + 1]) ||
+              (j < TS - 1 && band[k] !== band[k + TS]);
+            if (edge) { r = 125 + 20 * ridge; g = 150 + 80 * ridge; b = 200 - 65 * ridge; }
+            var p = k * 4;
+            d[p] = r; d[p + 1] = g; d[p + 2] = b; d[p + 3] = 255;
+          }
+        }
+        tctx.putImageData(img, 0, 0);
+      }
+
+      var stage = root.querySelector('.ls-stage');
+      var CW = Math.max(stage.clientWidth, 300);
+      // preserveDrawingBuffer:true so the canvas keeps its last frame when the
+      // rAF loop is throttled/paused (window unfocused / on another monitor).
+      // Without it, an unpainted WebGL swapchain shows *undefined* memory —
+      // which some GPU drivers fill with stale VRAM from other windows (e.g. a
+      // video playing elsewhere). Canvas-2D (the BIC film) persists its bitmap,
+      // so it never shows this; only the WebGL surface is affected.
+      var renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(CW, CH);
+      renderer.setClearColor(0x05070d, 1);
+      stage.appendChild(renderer.domElement);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, CW / CH, 0.1, 50);
+      camera.up.set(0, 0, 1);
+      function placeCamera() {
+        var d = 4.0;
+        camera.position.set(0, -d * Math.cos(tilt), d * Math.sin(tilt));
+        camera.lookAt(0, 0, -0.15);
+      }
+      placeCamera();
+
+      var group = new THREE.Group();
+      scene.add(group);
+
+      var RINGS = 130, SECT = 220;
+      var nVerts = 1 + RINGS * SECT;
+      var positions = new Float32Array(nVerts * 3);
+      var uvs = new Float32Array(nVerts * 2);
+      var idx = [];
+      uvs[0] = 0.5; uvs[1] = 0.5;
+      for (var ri = 1; ri <= RINGS; ri++) {
+        var r0 = (EXT * ri) / RINGS;
+        for (var s = 0; s < SECT; s++) {
+          var a = (2 * Math.PI * s) / SECT;
+          var v = 1 + (ri - 1) * SECT + s;
+          positions[v * 3] = r0 * Math.cos(a);
+          positions[v * 3 + 1] = r0 * Math.sin(a);
+          uvs[v * 2] = (r0 * Math.cos(a) + EXT) / (2 * EXT);
+          uvs[v * 2 + 1] = (r0 * Math.sin(a) + EXT) / (2 * EXT);
+        }
+      }
+      for (s = 0; s < SECT; s++) idx.push(0, 1 + s, 1 + ((s + 1) % SECT));
+      for (ri = 1; ri < RINGS; ri++) {
+        for (s = 0; s < SECT; s++) {
+          var a0 = 1 + (ri - 1) * SECT + s;
+          var b0 = 1 + (ri - 1) * SECT + ((s + 1) % SECT);
+          var c0 = 1 + ri * SECT + s;
+          var e0 = 1 + ri * SECT + ((s + 1) % SECT);
+          idx.push(a0, c0, b0, b0, c0, e0);
+        }
+      }
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      geo.setIndex(idx);
+      var tex = new THREE.CanvasTexture(texCv);
+      var mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+      group.add(new THREE.Mesh(geo, mat));
+
+      function displace() {
+        for (var v2 = 0; v2 < nVerts; v2++) {
+          positions[v2 * 3 + 2] = zval(positions[v2 * 3], positions[v2 * 3 + 1]);
+        }
+        geo.attributes.position.needsUpdate = true;
+      }
+
+      var sun = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 24, 16),
+        new THREE.MeshBasicMaterial({ color: 0xfdc040 })
+      );
+      group.add(sun);
+      var glowCv = document.createElement('canvas');
+      glowCv.width = 128; glowCv.height = 128;
+      var gg = glowCv.getContext('2d');
+      var rg = gg.createRadialGradient(64, 64, 4, 64, 64, 62);
+      rg.addColorStop(0, 'rgba(255,225,150,0.95)');
+      rg.addColorStop(0.4, 'rgba(245,166,35,0.4)');
+      rg.addColorStop(1, 'rgba(245,166,35,0)');
+      gg.fillStyle = rg;
+      gg.fillRect(0, 0, 128, 128);
+      var glow = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowCv), transparent: true, depthWrite: false })
+      );
+      glow.scale.set(0.6, 0.6, 1);
+      group.add(glow);
+      var planet = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045, 20, 14),
+        new THREE.MeshBasicMaterial({ color: 0xa9b0bd })
+      );
+      group.add(planet);
+
+      function labelSprite(txt) {
+        var c = document.createElement('canvas');
+        c.width = 128; c.height = 64;
+        var x = c.getContext('2d');
+        x.font = '600 40px system-ui, sans-serif';
+        x.fillStyle = '#9db8e8';
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+        x.fillText(txt, 64, 34);
+        var sp = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })
+        );
+        sp.scale.set(0.3, 0.15, 1);
+        return sp;
+      }
+      var markers = [];
+      for (var i5 = 0; i5 < 5; i5++) {
+        var mk = new THREE.Mesh(
+          new THREE.SphereGeometry(0.024, 14, 10),
+          new THREE.MeshBasicMaterial({ color: 0x5dcaa5 })
+        );
+        var lab = labelSprite('L' + (i5 + 1));
+        group.add(mk);
+        group.add(lab);
+        markers.push({ m: mk, lab: lab });
+      }
+
+      // one trapped minor planet librating at L4, shown only when the toggle is on,
+      // with a fading lab-frame trail behind it (old path fades as it moves).
+      // equal amplitudes => the planet circles L4 (rotation around L4); libW > speed
+      // so that epicycle is clearly visible in the lab frame on top of the orbit.
+      var ampT = 0.22, ampR = 0.22, libW = (speed || 0.4) * 4, libT = 0, showTraj = true;
+      var mp4 = new THREE.Mesh(new THREE.SphereGeometry(0.052, 22, 16), new THREE.MeshBasicMaterial({ color: 0xfff3d2 }));
+      group.add(mp4); // the trapped planet is always shown
+      // eye-catching glow halo around it
+      var mgCv = document.createElement('canvas'); mgCv.width = 128; mgCv.height = 128;
+      var mgc = mgCv.getContext('2d');
+      var mgGrad = mgc.createRadialGradient(64, 64, 2, 64, 64, 62);
+      mgGrad.addColorStop(0, 'rgba(255,244,205,0.95)');
+      mgGrad.addColorStop(0.35, 'rgba(255,201,110,0.5)');
+      mgGrad.addColorStop(1, 'rgba(255,190,90,0)');
+      mgc.fillStyle = mgGrad; mgc.fillRect(0, 0, 128, 128);
+      var mpGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(mgCv), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      group.add(mpGlow);
+      var TRAILMAX = 1000, trail = [];
+      var trailGeo = new THREE.BufferGeometry();
+      trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAILMAX * 3), 3));
+      trailGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TRAILMAX * 3), 3));
+      var trailLine = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      trailLine.visible = true; scene.add(trailLine); // lab frame → fixed in space
+      function loopPoint(L, ph) {
+        var rr = Math.hypot(L.x, L.y) || 1, ux = L.x / rr, uy = L.y / rr, tx = -uy, ty = ux;
+        var ot = ampT * Math.cos(ph), or = ampR * Math.sin(ph);
+        var x = L.x + tx * ot + ux * or, y = L.y + ty * ot + uy * or;
+        return [x, y, zval(x, y) + 0.04];
+      }
+
+      function rebuild() {
+        Lpts = findLpts(mu);
+        UL4 = pot(0.5 - mu, Math.sqrt(3) / 2, mu);
+        buildTexture();
+        tex.needsUpdate = true;
+        displace();
+        sun.position.set(-mu, 0, zval(-mu, 0) + 0.16);
+        glow.position.copy(sun.position);
+        planet.position.set(1 - mu, 0, zval(1 - mu, 0) + 0.1);
+        for (var i = 0; i < 5; i++) {
+          var L = Lpts[i];
+          markers[i].m.position.set(L.x, L.y, zval(L.x, L.y) + 0.02);
+          markers[i].m.material.color.set(L.st ? 0x5dcaa5 : 0xf0997b);
+          markers[i].lab.position.set(L.x, L.y, zval(L.x, L.y) + 0.16);
+        }
+      }
+      rebuild();
+
+      var last = performance.now();
+      var onScreen = true, isScrolling = false, scrollTimer = 0;
+      function tick(now) {
+        var dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        // Skip painting while the page is actively scrolling or the canvas is
+        // off-screen. An animating WebGL canvas that repaints mid-scroll is what
+        // lets the browser composite a stale/torn tile; frozen, it keeps its
+        // last frame (preserveDrawingBuffer) and scrolls cleanly.
+        if (isScrolling || !onScreen) { requestAnimationFrame(tick); return; }
+        if (playing) {
+          theta += speed * dt;
+          group.rotation.z = theta;
+          libT += dt;
+        }
+        var q4 = loopPoint(Lpts[3], libT * libW);
+        mp4.position.set(q4[0], q4[1], q4[2]);
+        mpGlow.position.set(q4[0], q4[1], q4[2] + 0.02);
+        var gs = 0.32 + 0.06 * Math.sin(libT * 3);
+        mpGlow.scale.set(gs, gs, 1);
+        if (showTraj && playing) {
+          var tth = group.rotation.z, tc = Math.cos(tth), ts = Math.sin(tth);
+          trail.push([q4[0] * tc - q4[1] * ts, q4[0] * ts + q4[1] * tc, q4[2]]);
+          if (trail.length > TRAILMAX) trail.shift();
+          var tp = trailGeo.attributes.position.array, tcol = trailGeo.attributes.color.array, tn = trail.length;
+          for (var kk = 0; kk < tn; kk++) {
+            tp[kk * 3] = trail[kk][0]; tp[kk * 3 + 1] = trail[kk][1]; tp[kk * 3 + 2] = trail[kk][2];
+            var ff = Math.pow(kk / (tn - 1 || 1), 0.6); // slower decay: old stays brighter longer
+            tcol[kk * 3] = ff; tcol[kk * 3 + 1] = 0.85 * ff; tcol[kk * 3 + 2] = 0.55 * ff;
+          }
+          trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.color.needsUpdate = true;
+          trailGeo.setDrawRange(0, tn);
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      window.addEventListener('scroll', function () {
+        isScrolling = true;
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function () { isScrolling = false; last = performance.now(); }, 180);
+      }, { passive: true });
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (es) {
+          onScreen = es[0].isIntersecting;
+          if (onScreen) last = performance.now();
+        }, { rootMargin: '120px' }).observe(stage);
+      }
+
+      var btn = root.querySelector('.ls-play');
+      if (reduced) { btn.textContent = '\u25B6'; btn.setAttribute('aria-label', 'Play'); }
+      btn.addEventListener('click', function () {
+        playing = !playing;
+        btn.textContent = playing ? '\u2758\u2758' : '\u25B6';
+        btn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+      });
+      var trajBox = root.querySelector('.ls-traj');
+      trajBox.addEventListener('change', function () {
+        showTraj = trajBox.checked;
+        trailLine.visible = showTraj;
+        if (!showTraj) { trail.length = 0; trailGeo.setDrawRange(0, 0); }
+      });
+
+      var rsPend = false;
+      window.addEventListener('resize', function () {
+        if (rsPend) return;
+        rsPend = true;
+        requestAnimationFrame(function () {
+          var w = Math.max(stage.clientWidth, 300);
+          renderer.setSize(w, CH);
+          camera.aspect = w / CH;
+          camera.updateProjectionMatrix();
+          rsPend = false;
+        });
+      });
+    }
+
+    function boot() {
+      document.querySelectorAll('.lagrange-surface').forEach(initLagrangeSurface);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  })();
+</script>

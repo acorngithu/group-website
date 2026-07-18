@@ -1,17 +1,29 @@
 ---
 // src/components/PubList.astro
-// Renders a list of publications (year + citation). Shared by the Publications
-// page and each research pillar's "Related publications" section.
+// Renders a list of publications, each with an optional graphical-abstract
+// thumbnail on the left (matted, so white-background figures look clean on the
+// dark theme). Shared by the Publications page and each pillar's related list.
 import type { Publication } from "../data/publications";
 
 const { items } = Astro.props as { items: Publication[] };
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const asset = (p: string) => (/^https?:\/\//.test(p) ? p : BASE + p);
 ---
 
 <ol class="pub-list">
   {
     items.map((p) => (
       <li class="pub">
-        <div class="pub-year">{p.year}</div>
+        <div class:list={["pub-thumb", { empty: !p.thumbnail }]}>
+          {p.thumbnail ? (
+            <div class="mat">
+              <img src={asset(p.thumbnail)} alt={`Figure for “${p.title}”`} loading="lazy" onerror="this.closest('.pub-thumb')?.classList.add('empty')" />
+            </div>
+          ) : (
+            <span class="ph" aria-hidden="true">Figure</span>
+          )}
+        </div>
+
         <div class="pub-body">
           <div class="pub-title">
             {p.url ? (
@@ -21,9 +33,10 @@ const { items } = Astro.props as { items: Publication[] };
             )}
           </div>
           <div class="pub-authors">{p.authors}</div>
-          <div class="pub-venue">
-            <span class="venue-name">{p.venue}</span>
-            {p.note && <span class="pub-note">{p.note}</span>}
+          <div class="pub-meta">
+            <span class="venue">{p.venue}</span>
+            <span class="year">{p.year}</span>
+            {p.note && <span class="badge">{p.note}</span>}
           </div>
         </div>
       </li>
@@ -35,50 +48,48 @@ const { items } = Astro.props as { items: Publication[] };
   .pub-list { list-style: none; display: flex; flex-direction: column; }
   .pub {
     display: grid;
-    grid-template-columns: 4rem 1fr;
-    gap: 1rem;
-    padding: 1.1rem 0;
+    grid-template-columns: clamp(110px, 13vw, 130px) 1fr;
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+    padding: 1.3rem 0;
     border-bottom: 1px solid var(--line);
+    align-items: start;
   }
   .pub:last-child { border-bottom: none; }
 
-  .pub-year {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    color: var(--accent);
-    padding-top: 0.05rem;
+  /* thumbnail — matte card so white figures sit cleanly on the dark page */
+  .pub-thumb {
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--line);
   }
-  .pub-title {
-    font-size: 1.05rem;
-    font-weight: 500;
-    line-height: 1.35;
-    letter-spacing: -0.005em;
+  .pub-thumb .mat { background: #f5f7fa; width: 100%; height: 100%; display: grid; place-items: center; padding: 10px; }
+  .pub-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .pub-thumb.empty {
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-style: dashed;
   }
-  .pub-title a {
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--line);
-    transition: border-color 0.18s, color 0.18s;
-  }
-  .pub-title a:hover,
-  .pub-title a:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+  .pub-thumb.empty .mat, .pub-thumb.empty img { display: none; }
+  .pub-thumb .ph { color: var(--muted); opacity: 0.5; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-  .pub-authors { color: var(--muted); font-size: 0.92rem; margin-top: 0.2rem; }
-  .pub-venue { font-size: 0.92rem; margin-top: 0.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
-  .venue-name { font-style: italic; color: var(--ink); }
-  .pub-note {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-soft);
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
+  .pub-title { font-size: 1.05rem; font-weight: 600; line-height: 1.35; letter-spacing: -0.005em; }
+  .pub-title a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); transition: border-color 0.18s, color 0.18s; }
+  .pub-title a:hover, .pub-title a:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+
+  .pub-authors { color: var(--muted); font-size: 0.92rem; margin-top: 0.25rem; }
+  .pub-meta { font-size: 0.92rem; margin-top: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: baseline; }
+  .venue { font-style: italic; color: var(--ink); }
+  .year { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .badge {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 0.1rem 0.5rem; border-radius: 999px;
   }
 
-  @media (max-width: 520px) {
-    .pub { grid-template-columns: 1fr; gap: 0.3rem; }
-    .pub-year { font-size: 0.95rem; }
+  @media (max-width: 620px) {
+    .pub { grid-template-columns: 1fr; gap: 0.85rem; }
+    .pub-thumb { max-width: 200px; }
   }
 </style>

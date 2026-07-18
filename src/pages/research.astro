@@ -12,7 +12,7 @@ const link = (slug: string) => `${BASE}/research/${slug}`;
     <header class="masthead">
       <div class="eyebrow">What we do</div>
       <h1>Research</h1>
-      <p>Our work is organised around a few core pillars. Explore each for details and related publications.</p>
+      <p>Our work is organised around a few core pillars. Explore each for details, figures, and further reading.</p>
     </header>
 
     <div class="pillars">
@@ -44,9 +44,10 @@ const link = (slug: string) => `${BASE}/research/${slug}`;
 <style>
   .pillars {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: clamp(1.25rem, 3vw, 2rem);
   }
+  @media (max-width: 640px) { .pillars { grid-template-columns: 1fr; } }
 
   .pillar {
     display: block;

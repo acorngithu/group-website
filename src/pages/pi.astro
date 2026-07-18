@@ -1,0 +1,115 @@
+---
+// src/pages/pi.astro — the PI's standout profile page
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PubList from "../components/PubList.astro";
+import { pi } from "../data/pi";
+import { publications } from "../data/publications";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const asset = (p: string) => (/^https?:\/\//.test(p) ? p : BASE + p);
+const initials = pi.name.split(" ").map((w) => w[0]).join("");
+
+const selected = pi.selected.length
+  ? publications.filter((p) => pi.selected.some((t) => p.title.toLowerCase().includes(t.toLowerCase())))
+  : [...publications].sort((a, b) => b.year - a.year).slice(0, 3);
+---
+
+<BaseLayout title={`${pi.name} — ${pi.title}`} description={pi.focus}>
+  <main class="wrap">
+    <a class="back" href={`${BASE}/people`}>&larr; People</a>
+
+    <section class="pi-hero">
+      <div class="portrait">
+        <span class="fallback" aria-hidden="true">{initials}</span>
+        <img src={asset(pi.photo)} alt={`Portrait of ${pi.name}`} onerror="this.style.display='none'" />
+      </div>
+      <div class="pi-head">
+        <div class="eyebrow">{pi.title}</div>
+        <h1>{pi.name}{pi.nameNative && <span class="native"> · {pi.nameNative}</span>}</h1>
+        <p class="focus">{pi.focus}</p>
+        <div class="links">
+          {pi.links.email && <a class="btn" href={`mailto:${pi.links.email}`}>Email</a>}
+          {pi.links.scholar && <a class="btn ghost" href={pi.links.scholar} target="_blank" rel="noopener">Google Scholar ↗</a>}
+          {pi.links.cv && <a class="btn ghost" href={asset(pi.links.cv)} target="_blank" rel="noopener">CV ↗</a>}
+          {pi.links.website && <a class="btn ghost" href={pi.links.website} target="_blank" rel="noopener">Website ↗</a>}
+        </div>
+      </div>
+    </section>
+
+    {
+      pi.bio.length > 0 && (
+        <section class="block">
+          <h2 class="section-heading">Biography</h2>
+          <div class="prose">{pi.bio.map((p) => <p>{p}</p>)}</div>
+        </section>
+      )
+    }
+
+    {
+      pi.awards.length > 0 && (
+        <section class="block">
+          <h2 class="section-heading">Awards &amp; Honors</h2>
+          <ol class="awards">
+            {pi.awards.map((a) => (
+              <li>
+                <span class="ay">{a.year}</span>
+                <span class="at">{a.title}{a.org && <span class="ao"> · {a.org}</span>}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      selected.length > 0 && (
+        <section class="block">
+          <h2 class="section-heading">Selected Publications</h2>
+          <PubList items={selected} />
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .back { display: inline-block; margin-bottom: 1.5rem; color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.18s; }
+  .back:hover, .back:focus-visible { color: var(--ink); outline: none; }
+
+  .pi-hero {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: clamp(1.5rem, 4vw, 2.75rem);
+    align-items: center;
+    padding-bottom: clamp(1.75rem, 4vw, 2.5rem);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+  @media (max-width: 640px) { .pi-hero { grid-template-columns: 1fr; } .portrait { max-width: 220px; } }
+
+  .portrait { position: relative; aspect-ratio: 4 / 5; border-radius: 12px; overflow: hidden; background: var(--accent-soft); box-shadow: 0 1px 0 var(--line); }
+  .portrait img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; object-position: center 22%; display: block; }
+  .fallback { position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; font-family: var(--serif); font-size: 2.4rem; color: #9fb0c6; background: #1c2740; }
+
+  .pi-head h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -0.01em; line-height: 1.05; }
+  .pi-head .native { font-style: italic; color: var(--accent); font-size: 0.62em; }
+  .pi-head .focus { color: var(--muted); font-size: 1.05rem; margin-top: 0.7rem; max-width: 52ch; }
+
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
+  .btn { display: inline-flex; align-items: center; padding: 0.55rem 1.05rem; border-radius: 8px; font-size: 0.9rem; font-weight: 500; text-decoration: none; background: var(--accent); color: #fff; transition: opacity 0.18s, border-color 0.18s, color 0.18s; }
+  .btn:hover { opacity: 0.9; }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .block { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+  .prose { max-width: 68ch; }
+  .prose p { color: var(--ink); font-size: 1.05rem; line-height: 1.75; }
+  .prose p + p { margin-top: 1rem; }
+
+  .awards { list-style: none; display: flex; flex-direction: column; }
+  .awards li { display: grid; grid-template-columns: 5rem 1fr; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .awards li:last-child { border-bottom: none; }
+  .ay { font-family: var(--serif); font-size: 1.1rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .at { color: var(--ink); }
+  .ao { color: var(--muted); }
+</style>

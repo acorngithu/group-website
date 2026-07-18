@@ -1,0 +1,164 @@
+---
+// src/components/PillarFigure.astro
+// A dark-native animated figure used as a research pillar's hero. Pass a `kind`
+// that selects one of the canvas animations in the registry below. Self-hosted,
+// vanilla JS, pauses off-screen, honors prefers-reduced-motion.
+interface Props { kind: string; }
+const { kind } = Astro.props;
+---
+
+<canvas class="pillar-fig" data-fig={kind} aria-hidden="true"></canvas>
+
+<style>
+  .pillar-fig { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+</style>
+
+<script>
+  const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const TAU = Math.PI * 2;
+
+  function setup(cv) {
+    const ctx = cv.getContext("2d");
+    let w = 0, h = 0;
+    function fit() {
+      const r = cv.getBoundingClientRect();
+      w = Math.max(1, Math.round(r.width)); h = Math.max(1, Math.round(r.height));
+      cv.width = w * DPR; cv.height = h * DPR;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    fit();
+    new ResizeObserver(fit).observe(cv);
+    return { ctx, size: () => ({ w, h }) };
+  }
+  function glow(ctx, x, y, r, color) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+  }
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // ── Reconfigurable photonic chip: an arbitrary 2D index pattern is projected
+  //    onto the slab and re-modulated in situ; light is routed through it. ──
+  function reconfigurable(cv) {
+    const { ctx, size } = setup(cv);
+    const cols = 22, rows = 9;
+    let t = 0;
+    const smooth = (v) => v * v * (3 - 2 * v);
+    const clamp01 = (v) => Math.max(0, Math.min(1, v));
+    const fieldC = (nx, ny, tt) => 0.5 + (
+      Math.sin(6.2 * nx + tt * 0.7) * Math.cos(5.0 * ny - tt * 0.5)
+      + 0.7 * Math.sin(3.3 * nx - 2.4 * ny + tt * 0.9)
+      + 0.5 * Math.cos(4.1 * ny + tt * 0.45)
+    ) / 3.2;
+
+    return (dt) => {
+      const { w, h } = size(); t += dt;
+      const topPad = h * 0.22, botPad = h * 0.10, sidePad = w * 0.05;
+      const gx = sidePad, gy = topPad, gw = w - 2 * sidePad, gh = h - topPad - botPad;
+      const cw = gw / cols, ch = gh / rows;
+      const PX = (nx) => gx + nx * gw, PY = (ny) => gy + ny * gh;
+
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#0a1119"; ctx.fillRect(0, 0, w, h);
+
+      // projector + a more visible blue→purple projection cone
+      const px = w * 0.5, py = h * 0.06;
+      const cone = ctx.createLinearGradient(px, py, px, gy + gh * 0.2);
+      cone.addColorStop(0, "rgba(162,168,255,0.28)");
+      cone.addColorStop(1, "rgba(120,160,255,0.02)");
+      ctx.fillStyle = cone;
+      ctx.beginPath();
+      ctx.moveTo(px - 11, py + 9);
+      ctx.lineTo(gx + gw * 0.30, gy);
+      ctx.lineTo(gx + gw * 0.70, gy);
+      ctx.lineTo(px + 11, py + 9);
+      ctx.closePath(); ctx.fill();
+      // bright landing spots where the projection writes the slab
+      ctx.globalCompositeOperation = "lighter";
+      for (let s = 0; s < 3; s++) {
+        const sx = gx + gw * (0.34 + s * 0.16 + 0.02 * Math.sin(t * 0.9 + s));
+        glow(ctx, sx, gy + 2, 18, "rgba(175,190,255,0.5)");
+      }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#2c3a55"; rr(ctx, px - 21, py - 8, 42, 18, 4); ctx.fill();
+      ctx.fillStyle = "#a68bff"; rr(ctx, px - 5, py + 8, 10, 4, 2); ctx.fill();
+
+      // arbitrary 2D index pattern (blue→purple), reconfiguring in situ
+      ctx.globalCompositeOperation = "lighter";
+      const pad = Math.min(cw, ch) * 0.12, rad = Math.min(cw, ch) * 0.22;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const v = smooth(clamp01(fieldC((i + 0.5) / cols, (j + 0.5) / rows, t)));
+        const x = gx + i * cw, y = gy + j * ch;
+        const R = 45 + v * 115, G = 100 + v * 60, B = 205 + v * 50;
+        ctx.fillStyle = `rgba(${R | 0},${G | 0},${B | 0},${0.05 + v * 0.48})`;
+        rr(ctx, x + pad, y + pad, cw - 2 * pad, ch - 2 * pad, rad); ctx.fill();
+      }
+
+      // light: solid curved trajectories, routed (bent) by the index landscape
+      const grad = (nx, ny) => {
+        const e = 0.01;
+        return [(fieldC(nx + e, ny, t) - fieldC(nx - e, ny, t)) / (2 * e),
+                (fieldC(nx, ny + e, t) - fieldC(nx, ny - e, t)) / (2 * e)];
+      };
+      const starts = [0.26, 0.5, 0.74];
+      starts.forEach((y0, ri) => {
+        let x = 0, y = y0, vx = 1, vy = 0;
+        const pts = [[x, y]];
+        for (let s = 0; s < 130 && x < 1.001; s++) {
+          const [gxx, gyy] = grad(x, y);
+          vx += gxx * 0.002; vy += gyy * 0.009;
+          const m = Math.hypot(vx, vy) || 1; vx /= m; vy /= m;
+          x += vx * 0.010; y += vy * 0.010;
+          if (y < 0.02) { pts.push([x, 0.02]); break; }   // light exits the top edge
+          if (y > 0.98) { pts.push([x, 0.98]); break; }   // light exits the bottom edge
+          pts.push([x, y]);
+        }
+        const path = () => { ctx.beginPath(); pts.forEach((p, k) => { const X = PX(p[0]), Y = PY(p[1]); k ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }); };
+        // soft glow pass + bright core
+        ctx.strokeStyle = "rgba(140,185,255,0.16)"; ctx.lineWidth = 5; path(); ctx.stroke();
+        ctx.strokeStyle = "rgba(208,230,255,0.78)"; ctx.lineWidth = 1.8; path(); ctx.stroke();
+        // travelling light packet
+        if (!REDUCE) {
+          const prog = (t * 0.30 + ri * 0.33) % 1;
+          const pt = pts[Math.floor(prog * (pts.length - 1))];
+          if (pt) glow(ctx, PX(pt[0]), PY(pt[1]), 11, "rgba(226,238,255,0.95)");
+        }
+        // input / output taps
+        glow(ctx, PX(0), PY(y0), 7, "rgba(150,185,255,0.85)");
+        const end = pts[pts.length - 1];
+        if (end) glow(ctx, PX(end[0]), PY(end[1]), 7, "rgba(255,255,255,0.9)");
+      });
+      ctx.globalCompositeOperation = "source-over";
+    };
+  }
+
+  const FACTORIES = { reconfigurable };
+
+  const active = new Set();
+  document.querySelectorAll("canvas[data-fig]").forEach((cv) => {
+    const make = FACTORIES[cv.dataset.fig];
+    if (!make) return;
+    cv._step = make(cv);
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) { if (e.isIntersecting) active.add(cv); else active.delete(cv); }
+    }, { threshold: 0.05 });
+    io.observe(cv);
+  });
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    for (const cv of active) { cv._step(dt); if (REDUCE) active.delete(cv); }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+</script>

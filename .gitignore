@@ -17,3 +17,8 @@ pnpm-debug.log*
 
 # macOS / editor
 .DS_Store
+
+# private working materials (CVs, drafts, source docs) — not part of the site
+resources/
+# superseded standalone artifact export (1.2 MB; replaced by native BICFilm)
+bic-standalone.html
