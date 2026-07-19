@@ -17,25 +17,14 @@ export interface NewsItem {
 
 export const news: NewsItem[] = [
   {
-    date: "2026-06-15",
-    title: "New paper accepted in the Journal of the Field.",
-    titleZh: "一篇新论文被《领域期刊》接收。",
-    url: "https://doi.org/10.0000/placeholder",
+    date: "2027-07-19",
+    title: "We are hiring for 2027 Fall PhDs",
+    titleZh: "我们正在招收 2027 年秋季入学的博士生。",
   },
   {
-    date: "2026-05-20",
-    title: "Amina Hassan awarded a postdoctoral fellowship.",
-    titleZh: "Amina Hassan 荣获博士后奖学金。",
-  },
-  {
-    date: "2026-04-10",
-    title: "The group welcomes two new PhD students.",
-    titleZh: "课题组迎来两名新博士生。",
-  },
-  {
-    date: "2026-02-28",
-    title: "Invited talk at the Annual Conference.",
-    titleZh: "在年度学术会议上作特邀报告。",
+    date: "2026-07-19",
+    title: "Our lab will be launched in January 2027",
+    titleZh: "实验室将于 2027 年 1 月正式成立。",
   },
 
   // ── add more news below ──
