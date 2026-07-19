@@ -4,6 +4,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PubList from "../components/PubList.astro";
 import { pi } from "../data/pi";
 import { publications } from "../data/publications";
+import { ui } from "../data/i18n";
+import Bi from "../components/Bi.astro";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const asset = (p: string) => (/^https?:\/\//.test(p) ? p : BASE + p);
@@ -16,7 +18,7 @@ const selected = pi.selected.length
 
 <BaseLayout title={`${pi.name} — ${pi.title}`} description={pi.focus}>
   <main class="wrap">
-    <a class="back" href={`${BASE}/people`}>&larr; People</a>
+    <a class="back" href={`${BASE}/people`}><Bi en={ui.pi.back.en} zh={ui.pi.back.zh} /></a>
 
     <section class="pi-hero">
       <div class="portrait">
@@ -24,14 +26,14 @@ const selected = pi.selected.length
         <img src={asset(pi.photo)} alt={`Portrait of ${pi.name}`} onerror="this.style.display='none'" />
       </div>
       <div class="pi-head">
-        <div class="eyebrow">{pi.title}</div>
+        <div class="eyebrow"><Bi en={pi.title} zh={pi.titleZh} /></div>
         <h1>{pi.name}{pi.nameNative && <span class="native"> · {pi.nameNative}</span>}</h1>
         <p class="focus">{pi.focus}</p>
         <div class="links">
-          {pi.links.email && <a class="btn" href={`mailto:${pi.links.email}`}>Email</a>}
+          {pi.links.email && <a class="btn" href={`mailto:${pi.links.email}`}><Bi en={ui.pi.email.en} zh={ui.pi.email.zh} /></a>}
           {pi.links.scholar && <a class="btn ghost" href={pi.links.scholar} target="_blank" rel="noopener">Google Scholar ↗</a>}
-          {pi.links.cv && <a class="btn ghost" href={asset(pi.links.cv)} target="_blank" rel="noopener">CV ↗</a>}
-          {pi.links.website && <a class="btn ghost" href={pi.links.website} target="_blank" rel="noopener">Website ↗</a>}
+          {pi.links.cv && <a class="btn ghost" href={asset(pi.links.cv)} target="_blank" rel="noopener"><Bi en={ui.pi.cv.en} zh={ui.pi.cv.zh} /></a>}
+          {pi.links.website && <a class="btn ghost" href={pi.links.website} target="_blank" rel="noopener"><Bi en={ui.pi.website.en} zh={ui.pi.website.zh} /></a>}
         </div>
       </div>
     </section>
@@ -39,8 +41,8 @@ const selected = pi.selected.length
     {
       pi.bio.length > 0 && (
         <section class="block">
-          <h2 class="section-heading">Biography</h2>
-          <div class="prose">{pi.bio.map((p) => <p>{p}</p>)}</div>
+          <h2 class="section-heading"><Bi en={ui.pi.biography.en} zh={ui.pi.biography.zh} /></h2>
+          <div class="prose">{pi.bio.map((p, i) => <p><Bi en={p} zh={pi.bioZh[i]} /></p>)}</div>
         </section>
       )
     }
@@ -48,7 +50,7 @@ const selected = pi.selected.length
     {
       pi.awards.length > 0 && (
         <section class="block">
-          <h2 class="section-heading">Awards &amp; Honors</h2>
+          <h2 class="section-heading"><Bi en={ui.pi.awards.en} zh={ui.pi.awards.zh} /></h2>
           <ol class="awards">
             {pi.awards.map((a) => (
               <li>
@@ -64,7 +66,7 @@ const selected = pi.selected.length
     {
       selected.length > 0 && (
         <section class="block">
-          <h2 class="section-heading">Selected Publications</h2>
+          <h2 class="section-heading"><Bi en={ui.pi.selected.en} zh={ui.pi.selected.zh} /></h2>
           <PubList items={selected} />
         </section>
       )

@@ -4,6 +4,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PubList from "../components/PubList.astro";
 import { publications, pubSections } from "../data/publications";
 import { site } from "../data/site";
+import { ui } from "../data/i18n";
+import Bi from "../components/Bi.astro";
 
 // Featured flagship-venue papers, newest first.
 const selected = publications
@@ -24,18 +26,15 @@ const grouped = pubSections
 <BaseLayout title="Publications — Research Group" description="Selected flagship-venue publications from the group.">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">What we have worked on</div>
-      <h1>Publications</h1>
-      <p class="scholar-note">
-        For a full publication list, please visit
-        <a href={site.scholar} target="_blank" rel="noopener">Google Scholar</a>.
-      </p>
+      <div class="eyebrow"><Bi en={ui.publications.eyebrow.en} zh={ui.publications.eyebrow.zh} /></div>
+      <h1><Bi en={ui.publications.title.en} zh={ui.publications.title.zh} /></h1>
+      <p class="scholar-note"><Bi en={ui.publications.scholarPre.en} zh={ui.publications.scholarPre.zh} /><a href={site.scholar} target="_blank" rel="noopener">Google Scholar</a><Bi en={ui.publications.scholarPost.en} zh={ui.publications.scholarPost.zh} /></p>
     </header>
 
     {
       selected.length > 0 && (
         <section class="pub-section" aria-label="Selected Publications">
-          <h2 class="section-heading">Selected Publications</h2>
+          <h2 class="section-heading"><Bi en={ui.publications.selected.en} zh={ui.publications.selected.zh} /></h2>
           <PubList items={selected} />
         </section>
       )
@@ -44,7 +43,7 @@ const grouped = pubSections
     {
       grouped.map((sec) => (
         <section class="pub-section" aria-label={sec.label}>
-          <h2 class="section-heading">{sec.label}</h2>
+          <h2 class="section-heading"><Bi en={sec.label} zh={sec.labelZh} /></h2>
           <PubList items={sec.items} />
         </section>
       ))

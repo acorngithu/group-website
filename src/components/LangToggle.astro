@@ -1,0 +1,47 @@
+---
+// src/components/LangToggle.astro — top-right language switch (EN ⇄ 中文).
+// The button's label shows the language you'll switch TO. All logic is a tiny
+// self-hosted inline script (China-safe: no external requests). Include it once
+// per page inside the header. The <html data-lang> attribute is set even
+// earlier by the inline boot script (see langBootScript in i18n.ts) to avoid a
+// flash of the wrong language.
+---
+<button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言 / Switch language">
+  <span class="lang-en" aria-hidden="true">中文</span><span class="lang-zh" aria-hidden="true">EN</span>
+</button>
+
+<script is:inline>
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest("[data-lang-toggle]");
+    if (!btn) return;
+    var root = document.documentElement;
+    var next = root.getAttribute("data-lang") === "zh" ? "en" : "zh";
+    root.setAttribute("data-lang", next);
+    root.setAttribute("lang", next === "zh" ? "zh-Hans" : "en");
+    try { localStorage.setItem("lang", next); } catch (err) {}
+  });
+</script>
+
+<style>
+  .lang-toggle {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.18s, border-color 0.18s, background 0.18s;
+  }
+  .lang-toggle:hover,
+  .lang-toggle:focus-visible {
+    color: var(--ink);
+    border-color: var(--accent);
+    outline: none;
+  }
+</style>

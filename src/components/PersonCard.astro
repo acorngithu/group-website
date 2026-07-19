@@ -1,6 +1,8 @@
 ---
 // src/components/PersonCard.astro
 import type { Person } from "../data/people";
+import { ui } from "../data/i18n";
+import Bi from "./Bi.astro";
 
 const { person } = Astro.props as { person: Person };
 const initials = person.nameEn
@@ -38,9 +40,9 @@ const profileHref = person.profile
   <div class="meta">
     {person.email && <a href={`mailto:${person.email}`}>{person.email}</a>}
     {person.website && (
-      <a class="site" href={person.website} target="_blank" rel="noopener">Website</a>
+      <a class="site" href={person.website} target="_blank" rel="noopener"><Bi en={ui.people.website.en} zh={ui.people.website.zh} /></a>
     )}
-    {profileHref && <a class="profile" href={profileHref}>Full profile &rarr;</a>}
+    {profileHref && <a class="profile" href={profileHref}><Bi en={ui.people.fullProfile.en} zh={ui.people.fullProfile.zh} /></a>}
   </div>
 </article>
 

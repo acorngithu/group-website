@@ -4,6 +4,9 @@
 // Wrap a page's content in <BaseLayout title="…"> … </BaseLayout>.
 import "../styles/global.css";
 import { site } from "../data/site";
+import { ui, langBootScript } from "../data/i18n";
+import Bi from "../components/Bi.astro";
+import LangToggle from "../components/LangToggle.astro";
 
 interface Props {
   title: string;
@@ -27,12 +30,12 @@ const isActive = (p: string) => {
 };
 
 const nav = [
-  { href: "/", label: "Home" },
-  { href: "/research", label: "Research" },
-  { href: "/people", label: "People" },
-  { href: "/publications", label: "Publications" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/join", label: "Join" },
+  { href: "/", label: ui.nav.home },
+  { href: "/research", label: ui.nav.research },
+  { href: "/people", label: ui.nav.people },
+  { href: "/publications", label: ui.nav.publications },
+  { href: "/gallery", label: ui.nav.gallery },
+  { href: "/join", label: ui.nav.join },
 ];
 
 const year = new Date().getFullYear();
@@ -45,25 +48,31 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" href={`${BASE}/favicon.svg`} />
+    <script is:inline set:html={langBootScript} />
     <title>{title}</title>
   </head>
   <body class:list={[{ "theme-dark": theme === "dark" }]}>
     <header class="site-header">
       <div class="header-inner">
-        <a class="brand" href={href("/")}>{site.name}</a>
-        <nav class="site-nav" aria-label="Primary">
-          {
-            nav.map((item) => (
-              <a
-                href={href(item.href)}
-                class:list={["nav-link", { active: isActive(item.href) }]}
-                aria-current={isActive(item.href) ? "page" : undefined}
-              >
-                {item.label}
-              </a>
-            ))
-          }
-        </nav>
+        <a class="brand" href={href("/")}>
+          <Bi en={site.name} zh={site.nameZh} />
+        </a>
+        <div class="header-right">
+          <nav class="site-nav" aria-label="Primary">
+            {
+              nav.map((item) => (
+                <a
+                  href={href(item.href)}
+                  class:list={["nav-link", { active: isActive(item.href) }]}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                >
+                  <Bi en={item.label.en} zh={item.label.zh} />
+                </a>
+              ))
+            }
+          </nav>
+          <LangToggle />
+        </div>
       </div>
     </header>
 
@@ -71,8 +80,8 @@ const year = new Date().getFullYear();
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span>© {year} {site.name}</span>
-        <span class="footer-meta">{site.institution}</span>
+        <span>© {year} <Bi en={site.name} zh={site.nameZh} /></span>
+        <span class="footer-meta"><Bi en={site.institution} zh={site.institutionZh} /></span>
       </div>
     </footer>
   </body>
@@ -123,6 +132,12 @@ const year = new Date().getFullYear();
     text-decoration: none;
     color: var(--ink);
     white-space: nowrap;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem clamp(0.75rem, 2vw, 1.6rem);
   }
   .site-nav {
     display: flex;

@@ -2,6 +2,8 @@
 // src/pages/join.astro
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { join } from "../data/join";
+import { ui } from "../data/i18n";
+import Bi from "../components/Bi.astro";
 
 const open = join.positions.filter((p) => p.open);
 ---
@@ -9,14 +11,14 @@ const open = join.positions.filter((p) => p.open);
 <BaseLayout title="Join us — Research Group" description="Open positions and how to join the group.">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">Opportunities</div>
-      <h1>Join us</h1>
-      <p>{join.intro}</p>
+      <div class="eyebrow"><Bi en={ui.join.eyebrow.en} zh={ui.join.eyebrow.zh} /></div>
+      <h1><Bi en={ui.join.title.en} zh={ui.join.title.zh} /></h1>
+      <p><Bi en={join.intro} zh={join.introZh} /></p>
     </header>
 
     <section class="positions" aria-label="Open positions">
       <h2 class="section-heading">
-        Open positions
+        <Bi en={ui.join.openPositions.en} zh={ui.join.openPositions.zh} />
         {open.length > 0 && <span class="count">{open.length}</span>}
       </h2>
       {
@@ -25,23 +27,23 @@ const open = join.positions.filter((p) => p.open);
             {open.map((p) => (
               <article class="pos">
                 <div class="pos-head">
-                  <h3>{p.title}</h3>
-                  {p.detail && <span class="pos-detail">{p.detail}</span>}
+                  <h3><Bi en={p.title} zh={p.titleZh} /></h3>
+                  {p.detail && <span class="pos-detail"><Bi en={p.detail} zh={p.detailZh ?? p.detail} /></span>}
                 </div>
-                <p>{p.description}</p>
+                <p><Bi en={p.description} zh={p.descriptionZh} /></p>
               </article>
             ))}
           </div>
         ) : (
-          <p class="empty">No open positions right now — but we still welcome enquiries.</p>
+          <p class="empty"><Bi en={ui.join.noPositions.en} zh={ui.join.noPositions.zh} /></p>
         )
       }
     </section>
 
     <section class="apply" aria-label="How to apply">
-      <h2 class="section-heading">How to apply</h2>
+      <h2 class="section-heading"><Bi en={ui.join.howToApply.en} zh={ui.join.howToApply.zh} /></h2>
       <div class="prose">
-        {join.howToApply.map((para) => <p>{para}</p>)}
+        {join.howToApply.map((para, i) => <p><Bi en={para} zh={join.howToApplyZh[i]} /></p>)}
       </div>
       <a class="contact" href={`mailto:${join.contactEmail}`}>{join.contactEmail}</a>
     </section>

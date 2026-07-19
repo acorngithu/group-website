@@ -6,6 +6,8 @@ import PillarFigure from "../../components/PillarFigure.astro";
 import LagrangeSurface from "../../components/LagrangeSurface.astro";
 import BICFilm from "../../components/BICFilm.astro";
 import { research } from "../../data/research";
+import { ui } from "../../data/i18n";
+import Bi from "../../components/Bi.astro";
 
 export function getStaticPaths() {
   return research.map((pillar) => ({
@@ -20,12 +22,12 @@ const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
 <BaseLayout title={`${pillar.title} — Research`} description={pillar.tagline}>
   <main class="wrap">
-    <a class="back" href={`${BASE}/research`}>&larr; All research</a>
+    <a class="back" href={`${BASE}/research`}><Bi en="&larr; All research" zh="&larr; 全部研究" /></a>
 
     <header class="pillar-head">
-      <div class="eyebrow">Research pillar</div>
-      <h1>{pillar.title}</h1>
-      <p class="lead">{pillar.tagline}</p>
+      <div class="eyebrow"><Bi en={ui.pillar.eyebrow.en} zh={ui.pillar.eyebrow.zh} /></div>
+      <h1><Bi en={pillar.title} zh={pillar.titleZh} /></h1>
+      <p class="lead"><Bi en={pillar.tagline} zh={pillar.taglineZh} /></p>
     </header>
 
     {
@@ -33,15 +35,15 @@ const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
         <div class="cld-panels">
           <figure class="cld-panel">
             <figcaption class="panel-head">
-              <span class="panel-title">Trapping light as if it is a planet</span>
-              <span class="panel-sub">Trojan beam</span>
+              <span class="panel-title"><Bi en={ui.pillar.trojanTitle.en} zh={ui.pillar.trojanTitle.zh} /></span>
+              <span class="panel-sub"><Bi en={ui.pillar.trojanSub.en} zh={ui.pillar.trojanSub.zh} /></span>
             </figcaption>
             <LagrangeSurface aspect={16 / 9} />
           </figure>
           <figure class="cld-panel">
             <figcaption class="panel-head">
-              <span class="panel-title">Binding light by an endless interference</span>
-              <span class="panel-sub">Bound state in the continuum</span>
+              <span class="panel-title"><Bi en={ui.pillar.bicTitle.en} zh={ui.pillar.bicTitle.zh} /></span>
+              <span class="panel-sub"><Bi en={ui.pillar.bicSub.en} zh={ui.pillar.bicSub.zh} /></span>
             </figcaption>
             <div class="cld-bic"><BICFilm controls={false} externalCaption hideHeader /></div>
           </figure>
@@ -67,13 +69,13 @@ const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
     }
 
     <div class="prose">
-      {pillar.description.map((para) => <p>{para}</p>)}
+      {pillar.description.map((para, i) => <p><Bi en={para} zh={pillar.descriptionZh[i]} /></p>)}
     </div>
 
     {
       pillar.figures && pillar.figures.length > 0 && (
         <section class="figures" aria-label="Figures">
-          <h2 class="section-heading">Figures</h2>
+          <h2 class="section-heading"><Bi en={ui.pillar.figures.en} zh={ui.pillar.figures.zh} /></h2>
           <div class="fig-grid">
             {pillar.figures.map((f) => <Figure src={f.src} caption={f.caption} alt={f.alt} />)}
           </div>
@@ -84,7 +86,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
     {
       pillar.references && pillar.references.length > 0 && (
         <section class="refs" aria-label="Further reading">
-          <h2 class="section-heading">Further reading</h2>
+          <h2 class="section-heading"><Bi en={ui.pillar.furtherReading.en} zh={ui.pillar.furtherReading.zh} /></h2>
           <ol class="ref-list">
             {pillar.references.map((r) => (
               <li>

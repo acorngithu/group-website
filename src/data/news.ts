@@ -11,6 +11,7 @@
 export interface NewsItem {
   date: string; // "YYYY-MM-DD"
   title: string;
+  titleZh: string;
   url?: string;
 }
 
@@ -18,19 +19,23 @@ export const news: NewsItem[] = [
   {
     date: "2026-06-15",
     title: "New paper accepted in the Journal of the Field.",
+    titleZh: "一篇新论文被《领域期刊》接收。",
     url: "https://doi.org/10.0000/placeholder",
   },
   {
     date: "2026-05-20",
     title: "Amina Hassan awarded a postdoctoral fellowship.",
+    titleZh: "Amina Hassan 荣获博士后奖学金。",
   },
   {
     date: "2026-04-10",
     title: "The group welcomes two new PhD students.",
+    titleZh: "课题组迎来两名新博士生。",
   },
   {
     date: "2026-02-28",
     title: "Invited talk at the Annual Conference.",
+    titleZh: "在年度学术会议上作特邀报告。",
   },
 
   // ── add more news below ──
@@ -42,4 +47,10 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 export function formatDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+// Chinese form → "2026年7月1日".
+export function formatDateZh(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${y}年${m}月${d}日`;
 }

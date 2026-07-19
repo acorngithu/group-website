@@ -212,9 +212,9 @@ export const publications: Publication[] = parseBib(bibRaw).map((e) => ({
 
 // Section order + labels for the page. Reorder or rename freely; a section
 // with no matching entries is hidden automatically.
-export const pubSections: { type: PubType; label: string }[] = [
-  { type: "journal", label: "Journal Articles" },
-  { type: "conference", label: "Conference Papers" },
-  { type: "preprint", label: "Preprints" },
-  { type: "talk", label: "Invited Talks" },
+export const pubSections: { type: PubType; label: string; labelZh: string }[] = [
+  { type: "journal", label: "Journal Articles", labelZh: "期刊论文" },
+  { type: "conference", label: "Conference Papers", labelZh: "会议论文" },
+  { type: "preprint", label: "Preprints", labelZh: "预印本 (Preprint)" },
+  { type: "talk", label: "Invited Talks", labelZh: "特邀报告" },
 ];

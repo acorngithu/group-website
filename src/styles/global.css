@@ -33,6 +33,15 @@ body.theme-dark {
   --line: rgba(255, 255, 255, 0.1);
 }
 
+/* ── Language switch (EN ⇄ 中文) ──
+   Both languages ship in the HTML; we show one and hide the other by the
+   <html data-lang> attribute (set before paint by langBootScript). Default —
+   no attribute, e.g. JavaScript off — shows English. The attribute selector
+   (specificity 0,1,1) beats a component's plain-class display rule, so hidden
+   text stays hidden even inside flex/grid labels. */
+html:not([data-lang="zh"]) .lang-zh { display: none; }
+html[data-lang="zh"] .lang-en { display: none; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {

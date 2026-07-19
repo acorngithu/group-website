@@ -1,0 +1,25 @@
+---
+// src/components/Bi.astro — bilingual text node.
+// Renders BOTH languages inline; global CSS (in global.css) shows one and
+// hides the other based on <html data-lang>. Use it INSIDE a semantic element:
+//   <h1><Bi en="Research" zh="研究 (Research)" /></h1>
+//   <p><Bi en={p.en} zh={p.zh} /></p>
+// Only the visible span is shown, so headings/paragraphs stay clean in either
+// language. Pass a `text` prop instead of en/zh for strings identical in both
+// languages (names, symbols) — it renders once, untouched by the toggle.
+interface Props {
+  en?: string;
+  zh?: string;
+  text?: string; // language-neutral (shown in both) — e.g. a name or an arrow
+}
+const { en, zh, text } = Astro.props;
+---
+{
+  text !== undefined ? (
+    <span set:html={text} />
+  ) : (
+    <Fragment>
+      <span class="lang-en" lang="en" set:html={en}></span><span class="lang-zh" lang="zh" set:html={zh}></span>
+    </Fragment>
+  )
+}

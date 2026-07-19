@@ -3,6 +3,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { people, roleSections } from "../data/people";
 import PersonCard from "../components/PersonCard.astro";
+import { ui } from "../data/i18n";
+import Bi from "../components/Bi.astro";
 
 // Group members by role section; hide empty sections.
 const grouped = roleSections
@@ -17,15 +19,15 @@ const others = people.filter((p) => !p.role || !known.has(p.role));
 <BaseLayout title="People — Research Group" description="The people who make up the group." theme="dark">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">Who we are</div>
-      <h1>People</h1>
-      <p>The researchers, students, and collaborators who make up the group.</p>
+      <div class="eyebrow"><Bi en={ui.people.eyebrow.en} zh={ui.people.eyebrow.zh} /></div>
+      <h1><Bi en={ui.people.title.en} zh={ui.people.title.zh} /></h1>
+      <p><Bi en={ui.people.subtitle.en} zh={ui.people.subtitle.zh} /></p>
     </header>
 
     {
       grouped.map((sec) => (
         <section class="role-section" aria-label={sec.label}>
-          <h2 class="section-heading">{sec.label}</h2>
+          <h2 class="section-heading"><Bi en={sec.label} zh={sec.labelZh} /></h2>
           <div class="people">
             {sec.members.map((person) => (
               <PersonCard person={person} />
@@ -38,7 +40,7 @@ const others = people.filter((p) => !p.role || !known.has(p.role));
     {
       others.length > 0 && (
         <section class="role-section" aria-label="Others">
-          <h2 class="section-heading">Others</h2>
+          <h2 class="section-heading"><Bi en={ui.people.others.en} zh={ui.people.others.zh} /></h2>
           <div class="people">
             {others.map((person) => (
               <PersonCard person={person} />

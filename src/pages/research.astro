@@ -4,6 +4,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PillarFigure from "../components/PillarFigure.astro";
 import LagrangeSurface from "../components/LagrangeSurface.astro";
 import { research } from "../data/research";
+import { ui } from "../data/i18n";
+import Bi from "../components/Bi.astro";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const link = (slug: string) => `${BASE}/research/${slug}`;
@@ -20,9 +22,9 @@ const VISUAL: Record<string, { img?: string; fit?: string; anim?: string; trojan
 <BaseLayout title="Research — Research Group" description="Our research pillars.">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">What we do</div>
-      <h1>Research</h1>
-      <p>A few directions we are exploring at the moment. They shift as we learn — each is a way into questions we find hard to put down.</p>
+      <div class="eyebrow"><Bi en={ui.research.eyebrow.en} zh={ui.research.eyebrow.zh} /></div>
+      <h1><Bi en={ui.research.title.en} zh={ui.research.title.zh} /></h1>
+      <p><Bi en={ui.research.lead.en} zh={ui.research.lead.zh} /></p>
     </header>
 
     <div class="pillars">
@@ -32,9 +34,9 @@ const VISUAL: Record<string, { img?: string; fit?: string; anim?: string; trojan
           return (
             <a class="pillar" href={link(pillar.slug)} aria-label={pillar.title}>
               <div class="pillar-body">
-                <h2>{pillar.title}</h2>
-                <p>{pillar.tagline}</p>
-                <span class="pillar-go">Explore <span class="arr" aria-hidden="true">&rarr;</span></span>
+                <h2><Bi en={pillar.title} zh={pillar.titleZh} /></h2>
+                <p><Bi en={pillar.tagline} zh={pillar.taglineZh} /></p>
+                <span class="pillar-go"><Bi en={ui.research.explore.en} zh={ui.research.explore.zh} /> <span class="arr" aria-hidden="true">&rarr;</span></span>
               </div>
               <div class="pillar-visual">
                 {

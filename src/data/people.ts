@@ -61,11 +61,11 @@ export const people: Person[] = [
 
 // Section order + labels for the page. Reorder or rename freely (e.g. add
 // "undergrad" / "alumni" rows); a section with no members is hidden.
-export const roleSections: { role: Role; label: string }[] = [
-  { role: "pi", label: "Principal Investigator" },
-  { role: "postdoc", label: "Postdocs" },
-  { role: "phd", label: "PhD Students" },
-  { role: "msc", label: "Master's Students" },
-  { role: "undergrad", label: "Undergraduates" },
-  { role: "alumni", label: "Alumni" },
+export const roleSections: { role: Role; label: string; labelZh: string }[] = [
+  { role: "pi", label: "Principal Investigator", labelZh: "课题组负责人 (PI)" },
+  { role: "postdoc", label: "Postdocs", labelZh: "博士后" },
+  { role: "phd", label: "PhD Students", labelZh: "博士生" },
+  { role: "msc", label: "Master's Students", labelZh: "硕士生" },
+  { role: "undergrad", label: "Undergraduates", labelZh: "本科生" },
+  { role: "alumni", label: "Alumni", labelZh: "已毕业成员" },
 ];

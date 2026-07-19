@@ -4,18 +4,21 @@
 // To revert, copy that file back over this one.
 import NeuralField from "../components/NeuralField.astro";
 import { site } from "../data/site";
-import { news, formatDate } from "../data/news";
+import { news, formatDate, formatDateZh } from "../data/news";
+import { ui, langBootScript } from "../data/i18n";
+import Bi from "../components/Bi.astro";
+import LangToggle from "../components/LangToggle.astro";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const href = (p: string) => (p === "/" ? BASE || "/" : BASE + p);
 
 const latestNews = [...news].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 4);
 const nav = [
-  { h: "/research", l: "Research" },
-  { h: "/people", l: "People" },
-  { h: "/publications", l: "Publications" },
-  { h: "/gallery", l: "Gallery" },
-  { h: "/join", l: "Join" },
+  { h: "/research", l: ui.nav.research },
+  { h: "/people", l: ui.nav.people },
+  { h: "/publications", l: ui.nav.publications },
+  { h: "/gallery", l: ui.nav.gallery },
+  { h: "/join", l: ui.nav.join },
 ];
 const year = new Date().getFullYear();
 ---
@@ -27,6 +30,13 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={site.tagline} />
     <link rel="icon" href={`${BASE}/favicon.svg`} />
+    <script is:inline set:html={langBootScript} />
+    <style is:global>
+      /* Home is standalone (no BaseLayout), so it needs its own copy of the
+         language-visibility rule that global.css provides to every other page. */
+      html:not([data-lang="zh"]) .lang-zh { display: none; }
+      html[data-lang="zh"] .lang-en { display: none; }
+    </style>
     <title>{site.name}</title>
   </head>
   <body>
@@ -35,22 +45,25 @@ const year = new Date().getFullYear();
     <div class="home">
       <header class="hd">
         <div class="wrap">
-          <a class="brand" href={href("/")}>{site.name}</a>
-          <nav>
-            {nav.map((i) => <a href={href(i.h)}>{i.l}</a>)}
-          </nav>
+          <a class="brand" href={href("/")}><Bi en={site.name} zh={site.nameZh} /></a>
+          <div class="nav-right">
+            <nav>
+              {nav.map((i) => <a href={href(i.h)}><Bi en={i.l.en} zh={i.l.zh} /></a>)}
+            </nav>
+            <LangToggle />
+          </div>
         </div>
       </header>
 
       <section class="hero">
         <div class="wrap">
           <div class="hero-inner">
-            <div class="eyebrow">{site.institution}</div>
-            <h1>{site.name}</h1>
-            {site.intro.map((para) => <p class="lead">{para}</p>)}
+            <div class="eyebrow"><Bi en={site.institution} zh={site.institutionZh} /></div>
+            <h1><Bi en={site.name} zh={site.nameZh} /></h1>
+            {site.intro.map((para) => <p class="lead"><Bi en={para.en} zh={para.zh} /></p>)}
             <div class="cta-row">
-              <a class="btn primary" href={href("/research")}>Explore the research &rarr;</a>
-              <a class="btn ghost" href={href("/join")}>Join us</a>
+              <a class="btn primary" href={href("/research")}><Bi en={ui.home.exploreResearch.en} zh={ui.home.exploreResearch.zh} /></a>
+              <a class="btn ghost" href={href("/join")}><Bi en={ui.home.joinUs.en} zh={ui.home.joinUs.zh} /></a>
             </div>
           </div>
         </div>
@@ -62,13 +75,13 @@ const year = new Date().getFullYear();
             latestNews.length > 0 && (
               <section class="news" aria-label="News">
                 <div class="sec-head">
-                  <h2 class="label">News</h2>
+                  <h2 class="label"><Bi en={ui.home.news.en} zh={ui.home.news.zh} /></h2>
                 </div>
                 <ul class="news-list">
                   {latestNews.map((item) => (
                     <li>
-                      <time datetime={item.date}>{formatDate(item.date)}</time>
-                      {item.url ? <a href={item.url} target="_blank" rel="noopener">{item.title}</a> : <span>{item.title}</span>}
+                      <time datetime={item.date}><Bi en={formatDate(item.date)} zh={formatDateZh(item.date)} /></time>
+                      {item.url ? <a href={item.url} target="_blank" rel="noopener"><Bi en={item.title} zh={item.titleZh} /></a> : <span><Bi en={item.title} zh={item.titleZh} /></span>}
                     </li>
                   ))}
                 </ul>
@@ -78,17 +91,17 @@ const year = new Date().getFullYear();
 
           <section class="join-cta">
             <div>
-              <h2>Join us</h2>
-              <p>We're recruiting PhD and postdoc researchers.</p>
+              <h2><Bi en={ui.home.joinTitle.en} zh={ui.home.joinTitle.zh} /></h2>
+              <p><Bi en={ui.home.joinBlurb.en} zh={ui.home.joinBlurb.zh} /></p>
             </div>
-            <a class="btn primary" href={href("/join")}>See open positions &rarr;</a>
+            <a class="btn primary" href={href("/join")}><Bi en={ui.home.seePositions.en} zh={ui.home.seePositions.zh} /></a>
           </section>
         </div>
 
         <footer class="ft">
           <div class="wrap">
-            <span>© {year} {site.name}</span>
-            <span>{site.institution}</span>
+            <span>© {year} <Bi en={site.name} zh={site.nameZh} /></span>
+            <span><Bi en={site.institution} zh={site.institutionZh} /></span>
           </div>
         </footer>
       </div>
@@ -127,6 +140,7 @@ const year = new Date().getFullYear();
   header.hd { position: absolute; top: 0; left: 0; right: 0; z-index: 3; }
   header.hd .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 74px; flex-wrap: wrap; }
   .brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.01em; text-decoration: none; color: #fff; }
+  .nav-right { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem 1.2rem; }
   .hd nav { display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: 0.9rem; }
   .hd nav a { color: var(--muted); text-decoration: none; transition: color 0.18s; }
   .hd nav a:hover, .hd nav a:focus-visible { color: #fff; outline: none; }
