@@ -14,17 +14,17 @@ export const site = {
   tagline:
     "We pursue the problems that are the most fundamentally interesting or the most useful — in theory and in experiment.",
   taglineZh:
-    "我们研究那些最具基础意义、或最具实用价值的问题 —— 理论与实验并重。",
+    "我们探索最引人入胜的基础问题，也追求最具实用价值的应用，理论与实验并重。",
 
   // The home-page hero body. Each entry is one paragraph (English + Chinese).
   intro: [
     {
       en: "We are drawn to problems that are fundamentally interesting, practically important, and, when possible, both. We explore them through theory, computation, and experiment.",
-      zh: "我们着迷于那些兼具基础趣味与现实价值的问题 —— 并尽可能同时具备两者。我们通过理论、计算与实验来探索它们。",
+      zh: "有些问题饶有基础意趣，有些问题关乎现实应用，而最令我们心动的，往往二者兼备。我们借助理论、计算与实验来探究它们。",
     },
     {
       en: "Our work spans different forms of intelligence, the complex behavior of light, emerging photonic platforms, and new ways of computing. Across these directions, we seek simple principles beneath complex phenomena and new capabilities that become possible when physical limits are treated not merely as constraints, but as resources.",
-      zh: "我们的工作横跨不同形式的智能、光的复杂行为、新兴光子 (photonic) 平台以及全新的计算范式。在这些方向中，我们探寻复杂现象背后的简单原理，并发掘当物理极限不再被视为约束、而被当作资源 (resource) 时所能开启的全新能力。",
+      zh: "我们的研究横跨多种形式的智能、光的复杂行为、新兴光子平台与全新的计算范式。在这些方向上，我们力求从纷繁的现象中提炼出简单的原理，也在探寻这样一种可能：当物理极限不再被当作束缚、而被善用为资源时，会有怎样的新能力就此浮现。",
     },
   ],
 

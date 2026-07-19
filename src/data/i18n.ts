@@ -49,7 +49,7 @@ export const ui = {
     title: b("Research", "研究"),
     lead: b(
       "A few directions we are exploring at the moment. They shift as we learn — each is a way into questions we find hard to put down.",
-      "以下是我们目前正在探索的几个方向。它们随着我们的认识而不断调整 —— 每一个都是通往那些令我们难以释怀的问题的入口。",
+      "这是我们眼下正在探索的几个方向。它们会随着认识的深入而不断变化 —— 每一个，都是我们通往某个放不下的问题的入口。",
     ),
     explore: b("Explore", "了解更多"),
   },
@@ -60,7 +60,7 @@ export const ui = {
     figures: b("Figures", "图示"),
     furtherReading: b("Further reading", "延伸阅读"),
     // Complex-light-dynamics panels
-    trojanTitle: b("Trapping light as if it is a planet", "像行星一样俘获光"),
+    trojanTitle: b("Trapping light as if it is a planet", "让光如行星般被俘获"),
     trojanSub: b("Trojan beam", "特洛伊光束 (Trojan beam)"),
     bicTitle: b("Binding light by an endless interference", "以无尽的干涉束缚光"),
     bicSub: b("Bound state in the continuum", "连续域束缚态 (Bound state in the continuum)"),
@@ -71,7 +71,7 @@ export const ui = {
     title: b("People", "成员"),
     subtitle: b(
       "The researchers, students, and collaborators who make up the group.",
-      "组成本课题组的研究人员、学生与合作者。",
+      "构成本课题组的研究人员、学生与合作者。",
     ),
     others: b("Others", "其他成员"),
     website: b("Website", "个人主页"),

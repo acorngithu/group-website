@@ -50,7 +50,7 @@ export const research: Pillar[] = [
     title: "Reconfigurable Photonic Chips",
     titleZh: "可重构光子芯片 (Reconfigurable Photonic Chips)",
     tagline: "Photonic chips you train instead of just fabricate — reprogrammed on the fly with light.",
-    taglineZh: "可以训练、而不只是制造的光子芯片 —— 用光实时重新编程。",
+    taglineZh: "这样的光子芯片不是造出来的，而是“训练”出来的 —— 用光即时重新编程。",
     image: "/research/reconfigurable-photonics.jpg",
     alt: "A reconfigurable 2D photonic waveguide programmed by top illumination.",
     animation: "reconfigurablePixels",
@@ -59,8 +59,8 @@ export const research: Pillar[] = [
       "Paired with real-time output detection and machine-learning feedback, the chip is trained toward a target function, closing the long-standing gap between simulation and experiment. This opens a path to programmable optical interconnects, adaptive error correction, ultra-broadband optical computing, programmable on-chip quantum-light sources, and optical accelerators for AI inference.",
     ],
     descriptionZh: [
-      "传统光子器件一经制造便固定不变，对制造误差敏感，并受限于光刻 (lithography) 所能实现的离散折射率分布。我们构建了一种可重构的二维波导 (waveguide) 平台，其折射率分布由自上方投射的光图案「写入」—— 因此同一块芯片无需重新制造，即可为新任务重新编程。在单一器件上，我们已经演示了模式置换 (mode permutation)、厄米–高斯 (Hermite–Gaussian) 转换等通信功能，以及包括任意酉矩阵–向量乘法 (unitary matrix–vector multiplication) 在内的计算功能。",
-      "结合实时输出探测与机器学习 (machine learning) 反馈，芯片被训练以逼近目标功能，弥合了仿真与实验之间长期存在的鸿沟。这为可编程光互连 (optical interconnect)、自适应纠错、超宽带光计算、可编程片上量子光源，以及面向 AI 推理的光学加速器开辟了道路。",
+      "传统光子器件一旦制成便无法更改，既容易受制造误差影响，也受限于光刻工艺所能实现的离散折射率分布。我们搭建了一种可重构的二维波导平台：它的折射率分布由自上方投射的光场图案“写入”，因此同一块芯片无需重新流片，就能针对新任务重新编程。在单一器件上，我们已经演示了模式置换、厄米–高斯 (Hermite–Gaussian) 变换等通信功能，以及任意酉矩阵–向量乘法等计算功能。",
+      "再借助实时的输出探测与机器学习反馈，芯片被训练着逼近目标功能，长期横亘在仿真与实验之间的鸿沟就此弥合。这为可编程光互连、自适应纠错、超宽带光计算、可编程片上量子光源，以及面向 AI 推理的光学加速器等应用铺平了道路。",
     ],
     references: [
       { authors: "S. Molesky et al.", title: "Inverse design in nanophotonics", venue: "Nature Photonics", year: 2018, url: "https://www.nature.com/articles/s41566-018-0246-9" },
@@ -83,8 +83,8 @@ export const research: Pillar[] = [
       "Rather than forcing light to imitate an electronic computer, we harness what light does naturally. In a complex optical field, random thermal fluctuations are not noise: they encode the system's Hamiltonian, and measuring the field's correlations directly yields matrix-inverse information. We aim to build the first optical thermodynamic computer, targeting matrix inversion roughly 1000× faster and 100× more energy-efficient — enabling the second-order and target-space training strategies that today's GPU-bound methods largely avoid.",
     ],
     descriptionZh: [
-      "这一方向立足于我们所发展的光学热力学理论，它将统计力学的语言 —— 温度、化学势 (chemical potential) 与熵 (entropy) —— 引入多模非线性光学 (multimode nonlinear optics)。该理论能够解释光学热化 (optical thermalization)、光束自清洁 (beam self-cleaning) 等现象，并可在数秒内预测出过去需在超级计算机上耗时数小时才能得到的动力学过程。",
-      "我们并不强迫光去模仿电子计算机，而是善用光本身的天性。在复杂光场中，随机的热涨落 (thermal fluctuation) 并非噪声：它们编码了系统的哈密顿量 (Hamiltonian)，而直接测量光场的关联即可获得矩阵求逆的信息。我们的目标是构建首台光学热力学计算机，使矩阵求逆速度约提升 1000 倍、能效约提升 100 倍 —— 从而支撑当今受限于 GPU 的方法大多难以采用的二阶 (second-order) 与目标空间 (target-space) 训练策略。",
+      "这一方向立足于我们提出的光学热力学理论：它把统计力学的语言 —— 温度、化学势、熵 —— 引入多模非线性光学，既能解释光学热化、光束自清洁 (beam self-cleaning) 等现象，也能在几秒之内算出过去需要在超级计算机上跑上数小时的动力学过程。",
+      "我们并不强迫光去模仿电子计算机，而是顺应并善用光的天性。在复杂光场中，随机的热涨落并非噪声：它们本身就编码着系统的哈密顿量，只要测量光场的关联，便能直接读出矩阵求逆的结果。我们的目标，是造出第一台光学热力学计算机，让矩阵求逆的速度提升约一千倍、能效提升约一百倍 —— 从而让当今受制于 GPU 的方法难以企及的二阶优化与目标空间训练策略成为可能。",
     ],
     references: [
       { authors: "F. O. Wu, A. U. Hassan, D. N. Christodoulides", title: "Thermodynamic theory of highly multimoded nonlinear optical systems", venue: "Nature Photonics", year: 2019, url: "https://doi.org/10.1038/s41566-019-0501-8" },
@@ -99,7 +99,7 @@ export const research: Pillar[] = [
     title: "Analog Neural Networks",
     titleZh: "模拟神经网络 (Analog Neural Networks)",
     tagline: "Training physical systems until intelligence lives in the hardware itself.",
-    taglineZh: "训练物理系统，直到智能栖身于硬件本身。",
+    taglineZh: "训练物理系统，直到智能栖息于硬件本身。",
     image: "/research/analog-neural-networks.jpg",
     alt: "A lattice of coupled analog oscillators synchronizing.",
     animation: "oscBrainSide",
@@ -108,8 +108,8 @@ export const research: Pillar[] = [
       "The power lies in collective behaviour: many simple degrees of freedom, coupled together, organise into structured patterns that no single element carries. By shaping those interactions — and driving the system with a time-dependent Hamiltonian — we steer the system dynamics so that disordered initial states evolve toward the ordered configurations that encode a result. Rather than program the hardware, we train its dynamics, until the behaviour we want emerges from the physics itself.",
     ],
     descriptionZh: [
-      "数字硬件将每一次运算都强加到同一套僵硬的晶体管阵列之上。我们另辟蹊径：让一个物理动力学系统直接完成计算。信息被写入系统的初始状态，随后系统在自身（通常随时间变化）的哈密顿量 (Hamiltonian) 下演化，答案则从它最终稳定下来的集体状态中读出。计算由此成为一个物理过程，而非一串指令。",
-      "其力量源自集体行为：众多简单的自由度相互耦合，自组织成任何单一单元都无法承载的结构化图样。通过塑造这些相互作用 —— 并以随时间变化的哈密顿量驱动系统 —— 我们引导系统的动力学，使无序的初始状态朝着编码结果的有序构型演化。我们并非对硬件编程，而是训练它的动力学，直到我们想要的行为从物理本身涌现。",
+      "数字硬件把每一次运算都塞进同一套僵硬的晶体管阵列。我们另辟蹊径：让物理动力学系统本身来完成计算。先把信息写入系统的初始状态，任它在自身（通常随时间变化）的哈密顿量下自然演化，再从它最终安定下来的集体状态中读出答案。计算由此不再是一串指令，而成为一个物理过程。",
+      "力量正源自这种集体行为：众多简单的自由度彼此耦合，自组织出任何单个单元都无法承载的有序图样。我们通过塑造这些相互作用、并用随时间变化的哈密顿量驱动系统，来引导它的动力学，让无序的初态一步步演化到编码着答案的有序构型。我们不是为硬件编写程序，而是训练它的动力学，直到期望的行为从物理本身自然涌现。",
     ],
     references: [
       { authors: "B. Govind, M. G. Anderson, F. O. Wu, P. L. McMahon, A. Apsel", title: "An integrated microwave neural network for broadband computation and communication", venue: "Nature Electronics", year: 2025, url: "https://doi.org/10.1038/s41928-025-01422-1" },
@@ -123,7 +123,7 @@ export const research: Pillar[] = [
     title: "Complex Light Dynamics",
     titleZh: "复杂光动力学 (Complex Light Dynamics)",
     tagline: "Light is both particle and wave — and each face opens onto strikingly rich physics.",
-    taglineZh: "光既是粒子也是波 —— 而每一面都通向惊人丰富的物理。",
+    taglineZh: "光既是粒子，也是波 —— 而它的每一面，都通向惊人丰富的物理。",
     image: "/research/complex-light-dynamics.jpg",
     alt: "A bound state in the continuum — a trapped mode whose radiation cancels.",
     animation: "bic",
@@ -133,9 +133,9 @@ export const research: Pillar[] = [
       "And they are only the beginning. The same light also opens onto non-Hermitian photonics, topological protection of light, time reflection and spatiotemporal media, nonequilibrium transport, and negative-temperature optical thermodynamics — ideas long thought impossible or purely theoretical that are now becoming real experiments. If you are drawn to physics where waves and particles, order and disorder, and even space and time bend the usual rules, there is a great deal left to discover.",
     ],
     descriptionZh: [
-      "光既是粒子又是波，每一面都开启一个不同的物理世界供人探索。作为粒子，一束光可以被俘获在势能的山顶之上 —— 使它停留在那里的并非山谷，而是一种有效的科里奥利力 (Coriolis force)，正如太阳系中特洛伊小行星 (Trojan asteroid) 稳定地驻留在 L4 与 L5 点、领先或落后行星六十度那样。在上方旋转的势能景观中，光束的行为宛如一颗行星：一个光子驻留在太阳–木星系统的 L4 点，即便整个参考系绕恒星公转，它仍环绕着该点回旋。",
-      "作为波，同样的这束光却能做到看似不可能之事 —— 它成为连续域中的束缚光 (bound state in the continuum)：一个本应向外辐射的模式，却因自身的出射波相互干涉而彻底抵消，从而被完美地束缚住。粒子与波，由此成为通往同一片丰富物理的两道门。",
-      "而这仅仅是开始。同样的光还通向非厄米光子学 (non-Hermitian photonics)、光的拓扑保护 (topological protection)、时间反射 (time reflection) 与时空介质 (spatiotemporal media)、非平衡输运 (nonequilibrium transport)，以及负温度光学热力学 (negative-temperature optical thermodynamics) —— 这些曾被认为不可能、或纯属理论的构想，如今正逐渐成为真实的实验。如果你着迷于波与粒子、有序与无序、乃至空间与时间都突破常规的物理，那么这里仍有大量未知等待发掘。",
+      "光既是粒子，又是波，每一面都开启一个截然不同的物理世界。作为粒子，一束光可以被束缚在势能的“山顶”上 —— 让它安居其上的不是山谷，而是一种等效的科里奥利力 (Coriolis force)；这正如太阳系中的特洛伊小行星 (Trojan asteroid)，稳稳停驻在行星前后六十度的 L4、L5 点上。在上方那片旋转的势能景观里，光束就像一颗行星：一个光子驻守在太阳–木星系统的 L4 点，纵使整个参考系绕着恒星公转，它依旧环绕着该点回旋。",
+      "而作为波，同一束光又能做到看似不可能之事 —— 它化作连续域中的束缚态 (bound state in the continuum)：一个本该辐射远去的模式，却因自身的出射波彼此干涉、相互抵消，被完美地困在了原地。粒子与波，就此成为通往同一片丰富物理的两扇门。",
+      "而这一切，仅仅是开始。同一束光还通向非厄米光子学 (non-Hermitian photonics)、光的拓扑保护、时间反射 (time reflection) 与时空介质 (spatiotemporal media)、非平衡输运，以及负温度下的光学热力学 —— 这些曾被视作天方夜谭、或只停留在纸面上的设想，如今正一个个变成真实的实验。如果你也着迷于这样的物理 —— 在那里，波与粒子、有序与无序、乃至空间与时间都不再循规蹈矩 —— 那么，这里还有太多未知，等待你去发掘。",
     ],
     references: [
       { authors: "H. Luo, Y. Wei, F. O. Wu et al.", title: "Guiding Trojan light beams via Lagrange points", venue: "Nature Physics", year: 2024, url: "https://doi.org/10.1038/s41567-023-02270-6" },
