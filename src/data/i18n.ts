@@ -69,10 +69,6 @@ export const ui = {
   people: {
     eyebrow: b("Who we are", "我们是谁"),
     title: b("People", "成员"),
-    subtitle: b(
-      "The researchers, students, and collaborators who make up the group.",
-      "构成本课题组的研究人员、学生与合作者。",
-    ),
     others: b("Others", "其他成员"),
     website: b("Website", "个人主页"),
     fullProfile: b("Full profile →", "查看主页 →"),
