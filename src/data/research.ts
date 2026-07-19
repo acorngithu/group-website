@@ -66,7 +66,7 @@ export const research: Pillar[] = [
     tagline: "Computing with light's own thermal fluctuations — matrix inversion at a fraction of the energy.",
     image: "/research/optical-thermodynamic-computing.jpg",
     alt: "Thermalized multimode light encoding a matrix inversion.",
-    animation: "thermalCompute",
+    animation: "thermalArray",
     description: [
       "This direction rests on the optical-thermodynamic theory we developed, which brings the language of statistical mechanics — temperature, chemical potential, and entropy — to multimode nonlinear optics. It explains phenomena such as optical thermalization and beam self-cleaning, and predicts in seconds dynamics that once required hours on a supercomputer.",
       "Rather than forcing light to imitate an electronic computer, we harness what light does naturally. In a complex optical field, random thermal fluctuations are not noise: they encode the system's Hamiltonian, and measuring the field's correlations directly yields matrix-inverse information. We aim to build the first optical thermodynamic computer, targeting matrix inversion roughly 1000× faster and 100× more energy-efficient — enabling the second-order and target-space training strategies that today's GPU-bound methods largely avoid.",

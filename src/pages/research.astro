@@ -1,10 +1,21 @@
 ---
 // src/pages/research.astro — pillar landing
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PillarFigure from "../components/PillarFigure.astro";
+import LagrangeSurface from "../components/LagrangeSurface.astro";
 import { research } from "../data/research";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const link = (slug: string) => `${BASE}/research/${slug}`;
+const total = String(research.length).padStart(2, "0");
+
+// Each card's right-hand visual: a still frame (img) or a live animation (anim).
+const VISUAL: Record<string, { img?: string; fit?: string; anim?: string; trojan?: boolean }> = {
+  "reconfigurable-photonics": { anim: "reconfigurablePixels" },
+  "optical-thermodynamic-computing": { img: BASE + "/research/figures/thermal-chip.png", fit: "cover" },
+  "analog-neural-networks": { img: BASE + "/research/card-neural.png", fit: "cover" },
+  "complex-light-dynamics": { trojan: true },
+};
 ---
 
 <BaseLayout title="Research — Research Group" description="Our research pillars.">
@@ -17,25 +28,34 @@ const link = (slug: string) => `${BASE}/research/${slug}`;
 
     <div class="pillars">
       {
-        research.map((pillar, i) => (
-          <a class="pillar" href={link(pillar.slug)}>
-            <div class="pillar-media">
-              <span class="pillar-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-              <img
-                src={BASE + pillar.image}
-                alt={pillar.alt ?? pillar.title}
-                loading="lazy"
-                onerror="this.style.display='none'"
-              />
-              <div class="pillar-scrim" />
-              <div class="pillar-text">
+        research.map((pillar, i) => {
+          const v = VISUAL[pillar.slug] ?? {};
+          return (
+            <a class="pillar" href={link(pillar.slug)} aria-label={pillar.title}>
+              <div class="pillar-body">
+                <div class="pillar-kicker">
+                  <span class="pnum">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="pslash">/ {total}</span>
+                </div>
                 <h2>{pillar.title}</h2>
                 <p>{pillar.tagline}</p>
-                <span class="pillar-go">Explore &rarr;</span>
+                <span class="pillar-go">Explore <span class="arr" aria-hidden="true">&rarr;</span></span>
               </div>
-            </div>
-          </a>
-        ))
+              <div class="pillar-visual">
+                {
+                  v.img ? (
+                    <img src={v.img} alt="" loading="lazy" style={`object-fit:${v.fit ?? "cover"}`} />
+                  ) : v.trojan ? (
+                    <LagrangeSurface bare />
+                  ) : v.anim ? (
+                    <PillarFigure kind={v.anim} />
+                  ) : null
+                }
+                <span class="visual-fade" aria-hidden="true" />
+              </div>
+            </a>
+          );
+        })
       }
     </div>
   </main>
@@ -43,90 +63,118 @@ const link = (slug: string) => `${BASE}/research/${slug}`;
 
 <style>
   .pillars {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(1.25rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.4rem, 3vw, 2.1rem);
   }
-  @media (max-width: 640px) { .pillars { grid-template-columns: 1fr; } }
 
   .pillar {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 12px;
+    --card-bg: #0e1622;
+    position: relative;
+    display: grid;
+    grid-template-columns: 44% 56%;
+    height: clamp(240px, 26vw, 320px);
+    border-radius: 16px;
     overflow: hidden;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid var(--line);
+    background: linear-gradient(155deg, #14202f, var(--card-bg));
     box-shadow: 0 1px 0 var(--line);
-    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.3s, border-color 0.3s;
   }
   .pillar:hover,
   .pillar:focus-visible {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.18);
     outline: none;
   }
 
-  .pillar-media {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    background: linear-gradient(160deg, #16283f, #0e1826);
-    overflow: hidden;
-  }
-  .pillar-num {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    display: grid;
-    place-items: center;
-    font-family: var(--serif);
-    font-size: clamp(3rem, 8vw, 5rem);
-    color: #fff;
-    opacity: 0.22;
-  }
-  .pillar-media img {
-    position: absolute;
-    inset: 0;
+  .pillar-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.5rem, 3.4vw, 2.8rem);
     z-index: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .pillar:hover .pillar-media img { transform: scale(1.05); }
+  .pillar-kicker {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+  .pillar-kicker .pnum { color: #7ad0c4; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pillar-kicker .pslash { color: rgba(226, 236, 252, 0.5); }
 
-  /* dark gradient so the title stays legible over any photo */
-  .pillar-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    background: linear-gradient(to top, rgba(10, 12, 15, 0.72) 0%, rgba(10, 12, 15, 0.15) 45%, transparent 70%);
-  }
-  .pillar-text {
-    position: absolute;
-    z-index: 3;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: clamp(1rem, 3vw, 1.5rem);
-    color: #fff;
-  }
-  .pillar-text h2 {
+  .pillar h2 {
     font-family: var(--serif);
     font-weight: 500;
-    font-size: clamp(1.4rem, 3vw, 1.9rem);
-    line-height: 1.1;
+    font-size: clamp(1.45rem, 2.7vw, 2.1rem);
+    line-height: 1.08;
     letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
   }
-  .pillar-text p {
-    font-size: 0.95rem;
-    margin-top: 0.35rem;
-    opacity: 0.9;
-    max-width: 40ch;
+  .pillar-body p {
+    font-size: clamp(0.95rem, 1.4vw, 1.06rem);
+    line-height: 1.5;
+    margin: 0.65rem 0 0;
+    max-width: 42ch;
+    color: rgba(226, 236, 252, 0.82);
   }
   .pillar-go {
-    display: inline-block;
-    margin-top: 0.7rem;
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 500;
     color: #fff;
+  }
+  .pillar-go .arr { transition: transform 0.25s; }
+  .pillar:hover .pillar-go .arr,
+  .pillar:focus-visible .pillar-go .arr { transform: translateX(5px); }
+
+  .pillar-visual {
+    position: relative;
+    overflow: hidden;
+    background: #0a1119;
+  }
+  .pillar-visual img,
+  .pillar-visual :global(canvas) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-position: center;
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .pillar:hover .pillar-visual img,
+  .pillar:hover .pillar-visual :global(canvas),
+  .pillar:focus-visible .pillar-visual img,
+  .pillar:focus-visible .pillar-visual :global(canvas) { transform: scale(1.05); }
+  /* soft blend of the visual's left edge into the text column */
+  .visual-fade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, var(--card-bg) 0%, rgba(14, 22, 34, 0.35) 12%, transparent 34%);
+  }
+
+  @media (max-width: 720px) {
+    .pillar {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+      height: auto;
+    }
+    .pillar-visual { order: -1; aspect-ratio: 16 / 9; }
+    .visual-fade { background: linear-gradient(to top, var(--card-bg) 0%, rgba(14, 22, 34, 0.25) 22%, transparent 45%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pillar, .pillar-visual img, .pillar-visual :global(canvas), .pillar-go .arr { transition: none; }
   }
 </style>

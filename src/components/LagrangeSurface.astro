@@ -17,30 +17,38 @@ interface Props {
   tilt?: number;   // camera elevation in degrees, 15–80
   height?: number; // canvas height in px (used only when `aspect` is unset)
   aspect?: number; // if set, width/height ratio — box is responsive at this ratio
+  bare?: boolean;  // fill the container, no controls/legend/labels (for cards)
 }
 
-const { mu = 0.05, speed = 0.4, tilt = 34, height = 470, aspect } = Astro.props;
+const { mu = 0.05, speed = 0.4, tilt = 34, height = 470, aspect, bare = false } = Astro.props;
 // Self-hosted three.js (China-safe: no external CDN).
 const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.min.js";
 ---
 
 <div
-  class="lagrange-surface"
+  class={`lagrange-surface${bare ? " ls-bare" : ""}`}
   data-mu={mu}
   data-speed={speed}
   data-tilt={tilt}
   data-height={height}
   data-aspect={aspect}
+  data-bare={bare ? "1" : undefined}
 >
-  <div class="ls-stage" style={aspect ? `aspect-ratio:${aspect}` : undefined}></div>
-  <div class="ls-controls">
-    <button class="ls-play" type="button" aria-label="Pause">&#10074;&#10074;</button>
-    <label class="ls-toggle"><input class="ls-traj" type="checkbox" /> Trapped-planet trajectory in lab frame</label>
-  </div>
-  <div class="ls-legend">
-    <span><i class="ls-dot ls-stable"></i> L4, L5 — stable (a minor planet stays trapped here)</span>
-    <span><i class="ls-dot ls-unstable"></i> L1, L2, L3 — unstable</span>
-  </div>
+  <div class="ls-stage" style={aspect && !bare ? `aspect-ratio:${aspect}` : undefined}></div>
+  {
+    !bare && (
+      <>
+        <div class="ls-controls">
+          <button class="ls-play" type="button" aria-label="Pause">&#10074;&#10074;</button>
+          <label class="ls-toggle"><input class="ls-traj" type="checkbox" /> Trapped-planet trajectory in lab frame</label>
+        </div>
+        <div class="ls-legend">
+          <span><i class="ls-dot ls-stable"></i> L4, L5 — stable (a minor planet stays trapped here)</span>
+          <span><i class="ls-dot ls-unstable"></i> L1, L2, L3 — unstable</span>
+        </div>
+      </>
+    )
+  }
 </div>
 
 <style>
@@ -75,6 +83,10 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
     transform: translateZ(0);
     backface-visibility: hidden;
   }
+  /* bare mode: fill the parent (e.g. a card cell), no controls/rounding/shadow */
+  .ls-bare { height: 100%; }
+  .ls-bare .ls-stage { height: 100%; aspect-ratio: auto; border-radius: 0; background: transparent; }
+  .ls-bare .ls-stage canvas { border-radius: 0; box-shadow: none; }
   .ls-controls {
     display: flex;
     align-items: center;
@@ -130,6 +142,7 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
       var tilt = ((parseFloat(root.dataset.tilt) || 34) * Math.PI) / 180;
       var CH = parseInt(root.dataset.height, 10) || 470;
       var aspect = parseFloat(root.dataset.aspect) || 0;
+      var bare = root.dataset.bare === '1';
       var theta = 0, UL4 = 0, Lpts = [];
       var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var playing = !reduced;
@@ -207,8 +220,8 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
 
       var stage = root.querySelector('.ls-stage');
       var CW = Math.max(stage.clientWidth, 300);
-      // match the CSS aspect-ratio box exactly (identical size to the BIC panel)
-      if (aspect) CH = Math.round(stage.clientHeight) || Math.round(CW / aspect);
+      // match the CSS box exactly (aspect-ratio panels or a filled bare card)
+      if (aspect || bare) CH = Math.round(stage.clientHeight) || Math.round(CW / (aspect || 16 / 9));
       // preserveDrawingBuffer:true so the canvas keeps its last frame when the
       // rAF loop is throttled/paused (window unfocused / on another monitor).
       // Without it, an unpainted WebGL swapchain shows *undefined* memory —
@@ -322,9 +335,9 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
           new THREE.SphereGeometry(0.024, 14, 10),
           new THREE.MeshBasicMaterial({ color: 0x5dcaa5 })
         );
-        var lab = labelSprite('L' + (i5 + 1));
+        var lab = bare ? null : labelSprite('L' + (i5 + 1));
         group.add(mk);
-        group.add(lab);
+        if (lab) group.add(lab);
         markers.push({ m: mk, lab: lab });
       }
 
@@ -352,10 +365,13 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
         sp.scale.set(hW * (tw / 76), hW, 1);
         return sp;
       }
-      var sunLab = bodyLabel('Sun', '#ffe0a3');
-      var jupLab = bodyLabel('Jupiter', '#d3d9e4');
-      var phoLab = bodyLabel('Photon', '#bfe9ff');
-      group.add(sunLab); group.add(jupLab); group.add(phoLab);
+      var sunLab = null, jupLab = null, phoLab = null;
+      if (!bare) {
+        sunLab = bodyLabel('Sun', '#ffe0a3');
+        jupLab = bodyLabel('Jupiter', '#d3d9e4');
+        phoLab = bodyLabel('Photon', '#bfe9ff');
+        group.add(sunLab); group.add(jupLab); group.add(phoLab);
+      }
 
       // one trapped minor planet librating at L4, shown only when the toggle is on,
       // with a fading lab-frame trail behind it (old path fades as it moves).
@@ -396,13 +412,13 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
         sun.position.set(-mu, 0, zval(-mu, 0) + 0.16);
         glow.position.copy(sun.position);
         planet.position.set(1 - mu, 0, zval(1 - mu, 0) + 0.1);
-        sunLab.position.set(sun.position.x, sun.position.y, sun.position.z + 0.34);
-        jupLab.position.set(planet.position.x, planet.position.y, planet.position.z + 0.26);
+        if (sunLab) sunLab.position.set(sun.position.x, sun.position.y, sun.position.z + 0.34);
+        if (jupLab) jupLab.position.set(planet.position.x, planet.position.y, planet.position.z + 0.26);
         for (var i = 0; i < 5; i++) {
           var L = Lpts[i];
           markers[i].m.position.set(L.x, L.y, zval(L.x, L.y) + 0.02);
           markers[i].m.material.color.set(L.st ? 0x5dcaa5 : 0xf0997b);
-          markers[i].lab.position.set(L.x, L.y, zval(L.x, L.y) + 0.16);
+          if (markers[i].lab) markers[i].lab.position.set(L.x, L.y, zval(L.x, L.y) + 0.16);
         }
       }
       rebuild();
@@ -424,7 +440,7 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
         }
         var q4 = loopPoint(Lpts[3], libT * libW);
         mp4.position.set(q4[0], q4[1], q4[2]);
-        phoLab.position.set(q4[0], q4[1], q4[2] + 0.28);
+        if (phoLab) phoLab.position.set(q4[0], q4[1], q4[2] + 0.28);
         mpGlow.position.set(q4[0], q4[1], q4[2] + 0.02);
         var gs = 0.32 + 0.06 * Math.sin(libT * 3);
         mpGlow.scale.set(gs, gs, 1);
@@ -459,14 +475,16 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
       }
 
       var btn = root.querySelector('.ls-play');
-      if (reduced) { btn.textContent = '\u25B6'; btn.setAttribute('aria-label', 'Play'); }
-      btn.addEventListener('click', function () {
-        playing = !playing;
-        btn.textContent = playing ? '\u2758\u2758' : '\u25B6';
-        btn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
-      });
+      if (btn) {
+        if (reduced) { btn.textContent = '\u25B6'; btn.setAttribute('aria-label', 'Play'); }
+        btn.addEventListener('click', function () {
+          playing = !playing;
+          btn.textContent = playing ? '\u2758\u2758' : '\u25B6';
+          btn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+        });
+      }
       var trajBox = root.querySelector('.ls-traj');
-      trajBox.addEventListener('change', function () {
+      if (trajBox) trajBox.addEventListener('change', function () {
         showTraj = trajBox.checked;
         trailLine.visible = showTraj;
         if (!showTraj) { trail.length = 0; trailGeo.setDrawRange(0, 0); }
@@ -478,7 +496,7 @@ const threeSrc = import.meta.env.BASE_URL.replace(/\/+$/, "") + "/vendor/three.m
         rsPend = true;
         requestAnimationFrame(function () {
           var w = Math.max(stage.clientWidth, 300);
-          if (aspect) CH = Math.round(stage.clientHeight) || Math.round(w / aspect);
+          if (aspect || bare) CH = Math.round(stage.clientHeight) || Math.round(w / (aspect || 16 / 9));
           renderer.setSize(w, CH);
           camera.aspect = w / CH;
           camera.updateProjectionMatrix();
