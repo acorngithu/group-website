@@ -5,12 +5,10 @@
 import NeuralField from "../components/NeuralField.astro";
 import { site } from "../data/site";
 import { news, formatDate } from "../data/news";
-import { research } from "../data/research";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const href = (p: string) => (p === "/" ? BASE || "/" : BASE + p);
 
-const pillars = research.slice(0, 3);
 const latestNews = [...news].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 4);
 const nav = [
   { h: "/research", l: "Research" },
@@ -49,7 +47,7 @@ const year = new Date().getFullYear();
           <div class="hero-inner">
             <div class="eyebrow">{site.institution}</div>
             <h1>{site.name}</h1>
-            <p class="lead">{site.intro}</p>
+            {site.intro.map((para) => <p class="lead">{para}</p>)}
             <div class="cta-row">
               <a class="btn primary" href={href("/research")}>Explore the research &rarr;</a>
               <a class="btn ghost" href={href("/join")}>Join us</a>
@@ -60,28 +58,6 @@ const year = new Date().getFullYear();
 
       <div class="below">
         <div class="wrap sections">
-          <section class="research" aria-label="Research">
-            <div class="sec-head">
-              <h2 class="label">Research</h2>
-              <a class="more" href={href("/research")}>View all &rarr;</a>
-            </div>
-            <div class="pillars">
-              {
-                pillars.map((p, i) => (
-                  <a class="pillar" href={href(`/research/${p.slug}`)}>
-                    <span class="pnum" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
-                    <img src={BASE + p.image} alt={p.alt ?? p.title} loading="lazy" onerror="this.style.display='none'" />
-                    <div class="pscrim" />
-                    <div class="ptext">
-                      <h3>{p.title}</h3>
-                      <p>{p.tagline}</p>
-                    </div>
-                  </a>
-                ))
-              }
-            </div>
-          </section>
-
           {
             latestNews.length > 0 && (
               <section class="news" aria-label="News">
@@ -158,11 +134,12 @@ const year = new Date().getFullYear();
   /* hero: full-width container so its left edge lines up with the sections below */
   .hero { min-height: 100vh; display: flex; align-items: center; }
   .hero > .wrap { width: 100%; }
-  .hero-inner { max-width: 42ch; padding: 8rem 0 4rem; }
+  .hero-inner { max-width: 52ch; padding: 8rem 0 4rem; }
   .eyebrow { font-family: var(--display); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent2); display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.1rem; }
   .eyebrow::before { content: ""; width: 30px; height: 2px; background: var(--accent2); }
   .hero h1 { font-family: var(--display); font-size: clamp(2.6rem, 6.5vw, 4.6rem); font-weight: 700; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(100deg, #ffffff 55%, #7fa6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .lead { color: #c7d3e4; font-size: clamp(1.05rem, 1.6vw, 1.22rem); margin-top: 1.2rem; max-width: 46ch; }
+  .lead { color: #c7d3e4; font-size: clamp(1.05rem, 1.6vw, 1.22rem); margin-top: 1.1rem; max-width: 52ch; }
+  .lead:first-of-type { margin-top: 1.2rem; }
 
   .cta-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.9rem; }
   .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.35rem; border-radius: 9px; font-weight: 600; font-family: var(--display); font-size: 0.95rem; text-decoration: none; border: 1px solid transparent; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; }
@@ -177,20 +154,6 @@ const year = new Date().getFullYear();
 
   .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
   .label { font-family: var(--display); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
-  .more { color: var(--accent2); text-decoration: none; font-size: 0.88rem; font-weight: 600; }
-  .more:hover { color: #fff; }
-
-  /* research pillar cards */
-  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(1rem, 2.5vw, 1.4rem); }
-  .pillar { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; text-decoration: none; border: 1px solid var(--line); background: linear-gradient(160deg, #16283f, #0e1826); transition: transform 0.25s cubic-bezier(0.2,0.7,0.2,1), border-color 0.25s; }
-  .pillar:hover { transform: translateY(-4px); border-color: rgba(127, 166, 255, 0.55); }
-  .pnum { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-size: clamp(2.4rem, 6vw, 3.4rem); font-weight: 700; color: #fff; opacity: 0.12; }
-  .pillar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.2,0.7,0.2,1); }
-  .pillar:hover img { transform: scale(1.05); }
-  .pscrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8,12,20,0.82) 0%, rgba(8,12,20,0.2) 48%, transparent 72%); }
-  .ptext { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.1rem; color: #fff; }
-  .ptext h3 { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.15; }
-  .ptext p { color: #c7d3e4; font-size: 0.88rem; margin-top: 0.3rem; }
 
   .news-list { list-style: none; display: flex; flex-direction: column; }
   .news-list li { display: grid; grid-template-columns: 8rem 1fr; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }

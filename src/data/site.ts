@@ -5,17 +5,21 @@
 
 export const site = {
   // Shown in the header brand and page titles.
-  name: "Research Group",
+  name: "Physical Neural Networks Lab",
 
   // One line under the group name / used as the default meta description.
-  tagline: "Placeholder tagline — what the group studies, in one sentence.",
+  tagline:
+    "We pursue the problems that are the most fundamentally interesting or the most useful — in theory and in experiment.",
 
-  // A short paragraph for the home-page hero. Replace with a real intro.
-  intro:
-    "We are a research group working on [your field]. This is placeholder " +
-    "text — replace it with a couple of sentences describing the group's " +
-    "mission, approach, and what makes the work distinctive.",
+  // The home-page hero body. Each string is its own paragraph.
+  intro: [
+    "We are drawn to problems that are fundamentally interesting, practically important, and, when possible, both. We explore them through theory, computation, and experiment.",
+    "Our work spans different forms of intelligence, the complex behavior of light, emerging photonic platforms, and new ways of computing. Across these directions, we seek simple principles beneath complex phenomena and new capabilities that become possible when physical limits are treated not merely as constraints, but as resources.",
+  ],
 
   // Shown as the home eyebrow and in the footer.
   institution: "Department · University",
+
+  // Google Scholar profile — the canonical full publication list.
+  scholar: "https://scholar.google.com/citations?user=Fuwe_nEAAAAJ&hl=en",
 };

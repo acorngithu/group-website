@@ -17,7 +17,7 @@ const others = people.filter((p) => !p.role || !known.has(p.role));
 <BaseLayout title="People — Research Group" description="The people who make up the group." theme="dark">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">Members</div>
+      <div class="eyebrow">Who we are</div>
       <h1>People</h1>
       <p>The researchers, students, and collaborators who make up the group.</p>
     </header>
@@ -25,10 +25,7 @@ const others = people.filter((p) => !p.role || !known.has(p.role));
     {
       grouped.map((sec) => (
         <section class="role-section" aria-label={sec.label}>
-          <h2 class="section-heading">
-            {sec.label}
-            <span class="count">{sec.members.length}</span>
-          </h2>
+          <h2 class="section-heading">{sec.label}</h2>
           <div class="people">
             {sec.members.map((person) => (
               <PersonCard person={person} />

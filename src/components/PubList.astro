@@ -56,20 +56,20 @@ const asset = (p: string) => (/^https?:\/\//.test(p) ? p : BASE + p);
   }
   .pub:last-child { border-bottom: none; }
 
-  /* thumbnail — matte card so white figures sit cleanly on the dark page */
+  /* thumbnail — figure sits flush on a clean white tile (white blends with the
+     figures' own white backgrounds, so there's no visible frame on the dark page) */
   .pub-thumb {
     aspect-ratio: 4 / 3;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid var(--line);
   }
-  .pub-thumb .mat { background: #f5f7fa; width: 100%; height: 100%; display: grid; place-items: center; padding: 10px; }
+  .pub-thumb .mat { background: #fff; width: 100%; height: 100%; display: grid; place-items: center; }
   .pub-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .pub-thumb.empty {
     display: grid;
     place-items: center;
     background: rgba(255, 255, 255, 0.03);
-    border-style: dashed;
+    border: 1px dashed var(--line);
   }
   .pub-thumb.empty .mat, .pub-thumb.empty img { display: none; }
   .pub-thumb .ph { color: var(--muted); opacity: 0.5; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }

@@ -54,10 +54,10 @@ export const research: Pillar[] = [
       "Paired with real-time output detection and machine-learning feedback, the chip is trained toward a target function, closing the long-standing gap between simulation and experiment. This opens a path to programmable optical interconnects, adaptive error correction, ultra-broadband optical computing, programmable on-chip quantum-light sources, and optical accelerators for AI inference.",
     ],
     references: [
-      { authors: "S. Molesky et al.", title: "Inverse design in nanophotonics", venue: "Nature Photonics", year: 2018 },
-      { authors: "A. Y. Piggott et al.", title: "Inverse design and demonstration of a compact and broadband on-chip wavelength demultiplexer", venue: "Nature Photonics", year: 2015 },
-      { authors: "R. Yanagimoto et al.", title: "Programmable on-chip nonlinear photonics", venue: "Nature", year: 2025 },
-      { authors: "Y. Shen et al.", title: "Deep learning with coherent nanophotonic circuits", venue: "Nature Photonics", year: 2017 },
+      { authors: "S. Molesky et al.", title: "Inverse design in nanophotonics", venue: "Nature Photonics", year: 2018, url: "https://www.nature.com/articles/s41566-018-0246-9" },
+      { authors: "R. Yanagimoto et al.", title: "Programmable on-chip nonlinear photonics", venue: "Nature", year: 2025, url: "https://www.nature.com/articles/s41586-025-09620-9" },
+      { authors: "Y. Shen et al.", title: "Deep learning with coherent nanophotonic circuits", venue: "Nature Photonics", year: 2017, url: "https://www.nature.com/articles/nphoton.2017.93" },
+      { authors: "T. Onodera et al.", title: "Arbitrary control over multimode wave propagation for machine learning", venue: "Nature Physics", year: 2026, url: "https://www.nature.com/articles/s41567-025-03094-2" },
     ],
   },
   {
@@ -72,9 +72,11 @@ export const research: Pillar[] = [
       "Rather than forcing light to imitate an electronic computer, we harness what light does naturally. In a complex optical field, random thermal fluctuations are not noise: they encode the system's Hamiltonian, and measuring the field's correlations directly yields matrix-inverse information. We aim to build the first optical thermodynamic computer, targeting matrix inversion roughly 1000× faster and 100× more energy-efficient — enabling the second-order and target-space training strategies that today's GPU-bound methods largely avoid.",
     ],
     references: [
-      { authors: "H. Pourbeyram et al.", title: "Direct observations of thermalization to a Rayleigh–Jeans distribution in multimode optical fibres", venue: "Nature Physics", year: 2022 },
-      { authors: "M. Ferraro et al.", title: "Calorimetry of photon gases in nonlinear multimode optical fibers", venue: "Physical Review X", year: 2024 },
-      { authors: "L. G. Wright et al.", title: "Physics of highly multimode nonlinear optical systems", venue: "Nature Physics", year: 2022 },
+      { authors: "F. O. Wu, A. U. Hassan, D. N. Christodoulides", title: "Thermodynamic theory of highly multimoded nonlinear optical systems", venue: "Nature Photonics", year: 2019, url: "https://doi.org/10.1038/s41566-019-0501-8" },
+      { authors: "L. G. Wright, F. O. Wu, D. N. Christodoulides, F. W. Wise", title: "Physics of highly multimode nonlinear optical systems", venue: "Nature Physics", year: 2022, url: "https://doi.org/10.1038/s41567-022-01691-z" },
+      { authors: "A. L. Marques Muniz, F. O. Wu et al.", title: "Observation of photon–photon thermodynamic processes under negative optical temperature conditions", venue: "Science", year: 2023, url: "https://doi.org/10.1126/science.ade6523" },
+      { authors: "D. Melanson et al.", title: "Thermodynamic computing system for AI applications", venue: "Nature Communications", year: 2025, url: "https://www.nature.com/articles/s41467-025-59011-x" },
+      { authors: "M. Aifer et al.", title: "Thermodynamic linear algebra", venue: "npj Unconventional Computing", year: 2024, url: "https://www.nature.com/articles/s44335-024-00014-0" },
     ],
   },
   {
@@ -89,10 +91,10 @@ export const research: Pillar[] = [
       "The power lies in collective behaviour: many simple degrees of freedom, coupled together, organise into structured patterns that no single element carries. By shaping those interactions — and driving the system with a time-dependent Hamiltonian — we steer the system dynamics so that disordered initial states evolve toward the ordered configurations that encode a result. Rather than program the hardware, we train its dynamics, until the behaviour we want emerges from the physics itself.",
     ],
     references: [
-      { authors: "L. G. Wright et al.", title: "Deep physical neural networks trained with backpropagation", venue: "Nature", year: 2022 },
-      { authors: "T. Wang & J. Roychowdhury", title: "OIM: Oscillator-based Ising machines for solving combinatorial optimization problems", venue: "Unconventional Computation and Natural Computation", year: 2019 },
-      { authors: "J. J. Hopfield", title: "Neural networks and physical systems with emergent collective computational abilities", venue: "PNAS", year: 1982 },
-      { authors: "Y. Kuramoto", title: "Chemical Oscillations, Waves, and Turbulence", venue: "Springer", year: 1984 },
+      { authors: "B. Govind, M. G. Anderson, F. O. Wu, P. L. McMahon, A. Apsel", title: "An integrated microwave neural network for broadband computation and communication", venue: "Nature Electronics", year: 2025, url: "https://doi.org/10.1038/s41928-025-01422-1" },
+      { authors: "L. G. Wright et al.", title: "Deep physical neural networks trained with backpropagation", venue: "Nature", year: 2022, url: "https://www.nature.com/articles/s41586-021-04223-6" },
+      { authors: "B. Scellier & Y. Bengio", title: "Equilibrium propagation: bridging the gap between energy-based models and backpropagation", venue: "arXiv:1602.05179", year: 2016, url: "https://arxiv.org/abs/1602.05179" },
+      { authors: "V. López-Pastor & F. Marquardt", title: "Self-learning machines based on Hamiltonian echo backpropagation", venue: "Physical Review X", year: 2023, url: "https://journals.aps.org/prx/abstract/10.1103/PhysRevX.13.031020" },
     ],
   },
   {
@@ -109,10 +111,9 @@ export const research: Pillar[] = [
     ],
     references: [
       { authors: "H. Luo, Y. Wei, F. O. Wu et al.", title: "Guiding Trojan light beams via Lagrange points", venue: "Nature Physics", year: 2024, url: "https://doi.org/10.1038/s41567-023-02270-6" },
-      { authors: "C. W. Hsu et al.", title: "Bound states in the continuum", venue: "Nature Reviews Materials", year: 2016 },
-      { authors: "R. El-Ganainy et al.", title: "Non-Hermitian physics and PT symmetry", venue: "Nature Physics", year: 2018 },
-      { authors: "T. Ozawa et al.", title: "Topological photonics", venue: "Reviews of Modern Physics", year: 2019 },
-      { authors: "E. Galiffi et al.", title: "Photonics of time-varying media", venue: "Advanced Photonics", year: 2022 },
+      { authors: "R. El-Ganainy et al.", title: "Non-Hermitian physics and PT symmetry", venue: "Nature Physics", year: 2018, url: "https://www.nature.com/articles/nphys4323" },
+      { authors: "T. Ozawa et al.", title: "Topological photonics", venue: "Reviews of Modern Physics", year: 2019, url: "https://journals.aps.org/rmp/abstract/10.1103/RevModPhys.91.015006" },
+      { authors: "K. Koshelev et al.", title: "Bound states in the continuum in photonic structures", venue: "arXiv:2207.01441", year: 2022, url: "https://arxiv.org/abs/2207.01441" },
     ],
   },
 

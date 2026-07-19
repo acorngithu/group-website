@@ -29,6 +29,7 @@ export interface Publication {
   note?: string;
   topics?: string[];
   thumbnail?: string;
+  selected?: boolean;
 }
 
 type Fields = Record<string, string>;
@@ -206,6 +207,7 @@ export const publications: Publication[] = parseBib(bibRaw).map((e) => ({
   note: e.fields.badge ? cleanLatex(e.fields.badge) : undefined,
   topics: keywordsToTopics(e.fields),
   thumbnail: e.fields.thumbnail || undefined,
+  selected: /^(true|1|yes)$/i.test((e.fields.selected || "").trim()),
 }));
 
 // Section order + labels for the page. Reorder or rename freely; a section

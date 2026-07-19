@@ -3,33 +3,48 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PubList from "../components/PubList.astro";
 import { publications, pubSections } from "../data/publications";
+import { site } from "../data/site";
 
-// Group entries by section type, newest year first; drop empty sections.
+// Featured flagship-venue papers, newest first.
+const selected = publications
+  .filter((p) => p.selected)
+  .sort((a, b) => b.year - a.year);
+
+// The remaining entries, grouped by section type; newest year first; drop empties.
 const grouped = pubSections
   .map((s) => ({
     ...s,
     items: publications
-      .filter((p) => p.type === s.type)
+      .filter((p) => p.type === s.type && !p.selected)
       .sort((a, b) => b.year - a.year),
   }))
   .filter((s) => s.items.length > 0);
 ---
 
-<BaseLayout title="Publications — Research Group" description="Journal articles, conference papers, preprints, and talks.">
+<BaseLayout title="Publications — Research Group" description="Selected flagship-venue publications from the group.">
   <main class="wrap">
     <header class="masthead">
-      <div class="eyebrow">Output</div>
+      <div class="eyebrow">What we have worked on</div>
       <h1>Publications</h1>
-      <p>Journal articles, conference papers, preprints, and invited talks from the group.</p>
+      <p class="scholar-note">
+        For a full publication list, please visit
+        <a href={site.scholar} target="_blank" rel="noopener">Google Scholar</a>.
+      </p>
     </header>
+
+    {
+      selected.length > 0 && (
+        <section class="pub-section" aria-label="Selected Publications">
+          <h2 class="section-heading">Selected Publications</h2>
+          <PubList items={selected} />
+        </section>
+      )
+    }
 
     {
       grouped.map((sec) => (
         <section class="pub-section" aria-label={sec.label}>
-          <h2 class="section-heading">
-            {sec.label}
-            <span class="count">{sec.items.length}</span>
-          </h2>
+          <h2 class="section-heading">{sec.label}</h2>
           <PubList items={sec.items} />
         </section>
       ))
@@ -40,4 +55,14 @@ const grouped = pubSections
 <style>
   /* Citation list styling lives in PubList.astro (shared with pillar pages). */
   .pub-section { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+
+  .scholar-note { color: var(--muted); }
+  .scholar-note a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-soft);
+    transition: border-color 0.18s;
+  }
+  .scholar-note a:hover,
+  .scholar-note a:focus-visible { border-color: var(--accent); outline: none; }
 </style>
