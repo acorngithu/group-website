@@ -6,6 +6,25 @@ top explaining its fields.
 
 ---
 
+## The site is bilingual (English / 中文)
+
+Visitors switch the whole site between English and Chinese with the button in the
+top-right. Narrative text is stored **twice** — an English field and a Chinese twin
+whose name ends in `Zh` (e.g. `title` / `titleZh`). When you add or change narrative
+content, fill in **both**. Quick rules for the three things in this guide:
+
+- **People** — a member's only translated field is `nameNative` (their name in its
+  native script). Email and links are language-neutral, so **members need no extra work**.
+- **Publications** — **not translated.** Titles, authors, and venues stay in English in
+  both modes (normal for academic references). Nothing extra to do.
+- **News** — needs a Chinese `titleZh` (and `bodyZh` if it has its own page).
+
+If you leave a needed `…Zh` field off, the site just shows the English in both modes
+(nothing breaks). House style for technical terms: Chinese with the English in
+parentheses, e.g. `连续域束缚态 (Bound state in the continuum)`.
+
+---
+
 ## Where everything lives
 
 | To change… | Edit this file | Images go in |
@@ -39,21 +58,31 @@ top explaining its fields.
 
 ## How to do each thing
 
-### Add a person
+### Add a group member
 In `src/data/people.ts`, copy one `{ … }` block, change the fields, and set a `role`:
 ```ts
 {
   nameEn: "New Person",
-  nameNative: "新人",            // optional
+  nameNative: "新人",            // optional — name in native script (shows in both languages)
   email: "new.person@university.edu", // optional
   website: "https://…",          // optional
   photo: "/people/new-person.jpg",
   role: "phd",                    // pi | postdoc | phd | msc | undergrad | alumni
 },
 ```
-- Put the photo file in `public/people/` with a matching name.
-- People are grouped by `role`; empty groups hide automatically.
-- To rename/reorder the section headings, edit `roleSections` at the bottom of the file.
+- Put the photo file in `public/people/` with a matching name (lowercase, dashes).
+  Portraits look best around a 4:5 shape; a missing photo shows the person's initials.
+- `nameNative` is the one bilingual field — it appears (in italic accent) under the English
+  name in **both** language modes. Nothing else about a member needs translating.
+- People are grouped by `role`; empty groups hide automatically. Order within a group
+  follows the order of the blocks in the file.
+- To rename/reorder the section headings — or add a new one — edit `roleSections` at the
+  bottom of the file. Each entry needs **both** an English `label` and a Chinese `labelZh`:
+  ```ts
+  { role: "phd", label: "PhD Students", labelZh: "博士生" },
+  ```
+- Give a member their own profile page by adding `profile: "/pi"` (see the PI section);
+  their card then shows a "Full profile →" link.
 
 ### Edit the PI's page
 `src/data/pi.ts` powers the PI's standout page at **`/pi`**: photo, links (email / Google
@@ -63,8 +92,9 @@ publications (leave the array empty to auto-show the latest few). Put the CV fil
 person has `profile: "/pi"` in `people.ts` — add `profile: "/some-page"` to any person to
 give their card a "Full profile →" link.
 
-### Publications — from Better BibTeX (no hand-typing)
+### Add / manage publications — from Better BibTeX (no hand-typing)
 The page is built from a Better BibTeX `.bib` export; you never edit entries by hand.
+Publications are **not translated** — they show in English in both language modes.
 
 **Best (set-and-forget):** in Zotero, right-click your collection → **Export Collection…**
 → Format **Better BibTeX** → tick **Keep updated** → save it as `src/data/publications.bib`.
@@ -79,6 +109,9 @@ entry type, and every section sorts newest-first.
   `tex.thumbnail: /pubs/2025-paper.png`, and put the image in `public/pubs/`. White
   backgrounds are fine (it's matted); any shape works (shown whole). No thumbnail → a tidy
   "Figure" placeholder.
+- **Feature in "Selected Publications"** (the highlighted list at the top of the page):
+  Extra → `tex.selected: true`. Selected papers appear there newest-first; every other paper
+  still files into its Journal / Conference / Preprint / Talk section below.
 - _(A pillar's "Further reading" list is curated in `research.ts` — see below — not pulled from Zotero.)_
 - **Badge** (small tag by the venue): Extra → `tex.badge: Oral` (e.g. Oral, Best Paper, Invited).
 - **Force a section** (e.g. talks/presentations): Extra → `tex.pubtype: talk`
@@ -126,11 +159,40 @@ To use a **static image instead**, delete the `animation:` line and set `image:`
 capture one — it isn't stored anywhere by default.)
 
 ### Add news
-In `src/data/news.ts`:
+In `src/data/news.ts`, add a `{ … }` block. `date`, `title`, and `titleZh` are
+**required**; newest date shows first, and the home page lists the latest few.
 ```ts
-{ date: "2026-07-15", title: "We published a new paper.", url: "https://…" },
+{
+  date: "2026-07-15",                 // YYYY-MM-DD (also used for sorting)
+  title: "We published a new paper.",
+  titleZh: "我们发表了一篇新论文。",
+},
 ```
-Newest date shows first; the home page lists the latest few.
+That alone shows the headline as plain text. To make the headline **clickable**, pick
+**one** of these (optional):
+
+**(a) Give the item its own page.** Add a `slug` plus the full story in both languages
+(`body` / `bodyZh`, one string per paragraph). This builds a page at `/news/<slug>` and
+links the headline to it automatically:
+```ts
+{
+  date: "2027-07-19",
+  title: "We are hiring for 2027 Fall PhDs",
+  titleZh: "我们正在招收 2027 年秋季入学的博士生。",
+  slug: "phd-hiring-2027",            // lowercase-with-dashes, unique
+  body:   ["First paragraph…", "Second paragraph…"],
+  bodyZh: ["第一段……", "第二段……"],
+},
+```
+
+**(b) Link out to an existing page** — add a `url` instead of a slug:
+```ts
+url: "https://doi.org/10.xxxx/yyyy",  // external → opens in a new tab
+url: "/publications",                  // internal site path → same tab
+```
+
+**Precedence:** `slug` (own page) → `url` (link out) → plain text. Use at most one of
+`slug` / `url` per item.
 
 ### Edit Join / positions
 In `src/data/join.ts`: edit `intro`, the `positions` list (set `open: false` to hide a role
