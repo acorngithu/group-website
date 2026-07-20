@@ -5,6 +5,7 @@ import { join } from "../data/join";
 import { ui } from "../data/i18n";
 import Bi from "../components/Bi.astro";
 
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const open = join.positions.filter((p) => p.open);
 ---
 
@@ -31,6 +32,11 @@ const open = join.positions.filter((p) => p.open);
                   {p.detail && <span class="pos-detail"><Bi en={p.detail} zh={p.detailZh ?? p.detail} /></span>}
                 </div>
                 <p><Bi en={p.description} zh={p.descriptionZh} /></p>
+                {p.slug && (
+                  <a class="pos-more" href={`${BASE}/join/${p.slug}`}>
+                    <Bi en={ui.join.learnMore.en} zh={ui.join.learnMore.zh} />
+                  </a>
+                )}
               </article>
             ))}
           </div>
@@ -86,6 +92,18 @@ const open = join.positions.filter((p) => p.open);
     border-radius: 999px;
   }
   .pos p { color: var(--muted); font-size: 0.98rem; }
+  .pos-more {
+    display: inline-block;
+    margin-top: 0.9rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-soft);
+    transition: border-color 0.18s;
+  }
+  .pos-more:hover,
+  .pos-more:focus-visible { border-color: var(--accent); outline: none; }
 
   .prose { max-width: 68ch; }
   .prose p { color: var(--ink); font-size: 1.05rem; line-height: 1.7; }

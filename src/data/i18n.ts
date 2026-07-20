@@ -120,6 +120,9 @@ export const ui = {
       "目前暂无空缺岗位 —— 但我们始终欢迎您的咨询。",
     ),
     howToApply: b("How to apply", "申请方式"),
+    learnMore: b("Learn more →", "了解详情 →"),
+    back: b("← All positions", "← 全部岗位"),
+    apply: b("Apply / enquire", "申请 / 咨询"),
   },
 
   gallery: {

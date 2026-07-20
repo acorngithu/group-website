@@ -1,0 +1,88 @@
+---
+// src/pages/join/[slug].astro — one position's own detail page.
+// A page is generated for every position in src/data/join.ts that has a `slug`.
+// Positions without a slug stay on the Join page only.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { join } from "../../data/join";
+import { ui } from "../../data/i18n";
+import Bi from "../../components/Bi.astro";
+
+export function getStaticPaths() {
+  return join.positions
+    .filter((p) => p.slug)
+    .map((p) => ({ params: { slug: p.slug }, props: { position: p } }));
+}
+
+const { position } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+// Fall back to the short card blurb if no full body was written yet.
+const body = position.body ?? [position.description];
+const bodyZh = position.bodyZh ?? [position.descriptionZh];
+---
+
+<BaseLayout title={`${position.title} — Join us — Wu Lab`} description={position.description}>
+  <main class="wrap">
+    <a class="back" href={`${BASE}/join`}><Bi en={ui.join.back.en} zh={ui.join.back.zh} /></a>
+
+    <header class="masthead">
+      <div class="eyebrow"><Bi en={ui.join.eyebrow.en} zh={ui.join.eyebrow.zh} /></div>
+      <h1><Bi en={position.title} zh={position.titleZh} /></h1>
+      {position.detail && (
+        <p class="detail"><Bi en={position.detail} zh={position.detailZh ?? position.detail} /></p>
+      )}
+    </header>
+
+    <div class="prose">
+      {body.map((para, i) => <p><Bi en={para} zh={bodyZh[i] ?? para} /></p>)}
+    </div>
+
+    <a class="contact" href={`mailto:${join.contactEmail}`}>
+      <Bi en={ui.join.apply.en} zh={ui.join.apply.zh} /> · {join.contactEmail}
+    </a>
+  </main>
+</BaseLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.18s;
+  }
+  .back:hover,
+  .back:focus-visible { color: var(--ink); outline: none; }
+
+  .detail {
+    display: inline-block;
+    margin-top: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  .prose { max-width: 68ch; }
+  .prose p { color: var(--ink); font-size: 1.08rem; line-height: 1.7; }
+  .prose p + p { margin-top: 1.1rem; }
+
+  .contact {
+    display: inline-block;
+    margin-top: clamp(1.75rem, 4vw, 2.5rem);
+    padding: 0.65rem 1.2rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: opacity 0.18s;
+  }
+  .contact:hover,
+  .contact:focus-visible { opacity: 0.88; outline: none; }
+</style>
