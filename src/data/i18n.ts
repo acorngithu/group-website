@@ -54,7 +54,7 @@ export const ui = {
     title: b("Research", "研究"),
     lead: b(
       "A few directions we are exploring at the moment. They shift as we learn — each is a way into questions we find hard to put down.",
-      "这是我们眼下正在探索的几个方向。它们会随着认识的深入而不断变化 —— 每一个，都是我们通往某个放不下的问题的入口。",
+      "这是我们当前正在探索的几个方向。它们会随着认识的深入而不断变化 —— 每一个，都是我们探索那些令人着迷、值得反复追问的问题的一种方式。",
     ),
     explore: b("Explore", "了解更多"),
   },

@@ -12,7 +12,7 @@ export const site = {
 
   // Research-areas strapline shown under the name on the home hero.
   subname: "Physical Neural Networks · Photonics · Intelligence",
-  subnameZh: "物理神经网络 · 光子学 · 智能",
+  subnameZh: "物理神经网络 · 光子学 · 人工智能",
 
   // One line under the group name / used as the default meta description.
   tagline:
@@ -24,7 +24,7 @@ export const site = {
   intro: [
     {
       en: "We are drawn to problems that are fundamentally interesting, practically important, and, when possible, both. We explore them through theory, computation, and experiment.",
-      zh: "有些问题饶有基础意趣，有些问题关乎现实应用，而最令我们心动的，往往二者兼备。我们借助理论、计算与实验来探究它们。",
+      zh: "我们关注那些在基础科学上引人入胜、或者在现实世界中富有价值的问题；而最令人振奋的，往往是二者兼具。我们通过理论、计算与实验，探索这些问题背后的规律与可能。",
     },
     {
       en: "Our work spans new ways of computing, different forms of intelligence, the complex behavior of light, and emerging photonic platforms. Across these areas, we seek simple principles underlying complex phenomena and new capabilities that emerge when physical limits are treated not merely as constraints, but as resources.",
