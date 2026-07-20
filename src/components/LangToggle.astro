@@ -1,47 +1,70 @@
 ---
-// src/components/LangToggle.astro — top-right language switch (EN ⇄ 中文).
-// The button's label shows the language you'll switch TO. All logic is a tiny
-// self-hosted inline script (China-safe: no external requests). Include it once
-// per page inside the header. The <html data-lang> attribute is set even
-// earlier by the inline boot script (see langBootScript in i18n.ts) to avoid a
-// flash of the wrong language.
+// src/components/LangToggle.astro — top-right language switch (EN | 中文).
+// A colored segmented control: both options are always shown, and the ACTIVE
+// language is filled with the accent color (the highlight follows the
+// <html data-lang> attribute, set before paint by langBootScript in i18n.ts —
+// so there's no flash). Clicking a segment sets that language directly and
+// remembers it. All logic is a tiny self-hosted inline script (China-safe).
 ---
-<button type="button" class="lang-toggle" data-lang-toggle aria-label="切换语言 / Switch language">
-  <span class="lang-en" aria-hidden="true">中文</span><span class="lang-zh" aria-hidden="true">EN</span>
-</button>
+<div class="lang-switch" role="group" aria-label="Language / 语言">
+  <button type="button" class="lang-seg" data-set-lang="en" aria-label="English">EN</button>
+  <button type="button" class="lang-seg" data-set-lang="zh" aria-label="中文">中文</button>
+</div>
 
 <script is:inline>
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest && e.target.closest("[data-lang-toggle]");
-    if (!btn) return;
+    var seg = e.target.closest && e.target.closest("[data-set-lang]");
+    if (!seg) return;
+    var lang = seg.getAttribute("data-set-lang") === "zh" ? "zh" : "en";
     var root = document.documentElement;
-    var next = root.getAttribute("data-lang") === "zh" ? "en" : "zh";
-    root.setAttribute("data-lang", next);
-    root.setAttribute("lang", next === "zh" ? "zh-Hans" : "en");
-    try { localStorage.setItem("lang", next); } catch (err) {}
+    root.setAttribute("data-lang", lang);
+    root.setAttribute("lang", lang === "zh" ? "zh-Hans" : "en");
+    try { localStorage.setItem("lang", lang); } catch (err) {}
   });
 </script>
 
-<style>
-  .lang-toggle {
+<!-- Styles are global so the html[data-lang] active-state selectors resolve
+     reliably (Astro's per-component scoping would otherwise rewrite them). The
+     `.lang-switch` prefix keeps them from leaking to anything else. -->
+<style is:global>
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    line-height: 0;
+  }
+  .lang-switch .lang-seg {
     font: inherit;
     font-size: 0.82rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.02em;
     line-height: 1;
-    color: var(--muted);
-    background: transparent;
-    border: 1px solid var(--line);
+    padding: 0.34rem 0.7rem;
+    border: 0;
     border-radius: 999px;
-    padding: 0.4rem 0.75rem;
+    background: transparent;
+    color: var(--accent);
     cursor: pointer;
     white-space: nowrap;
-    transition: color 0.18s, border-color 0.18s, background 0.18s;
+    transition: background 0.18s, color 0.18s;
   }
-  .lang-toggle:hover,
-  .lang-toggle:focus-visible {
-    color: var(--ink);
-    border-color: var(--accent);
-    outline: none;
+  .lang-switch .lang-seg:hover { background: var(--accent-soft); }
+  .lang-switch .lang-seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* The active segment is filled with the accent colour. Default (no attribute,
+     e.g. JS off) treats English as active. */
+  html:not([data-lang="zh"]) .lang-switch .lang-seg[data-set-lang="en"],
+  html[data-lang="zh"] .lang-switch .lang-seg[data-set-lang="zh"] {
+    background: var(--accent);
+    color: #fff;
+  }
+  html:not([data-lang="zh"]) .lang-switch .lang-seg[data-set-lang="en"]:hover,
+  html[data-lang="zh"] .lang-switch .lang-seg[data-set-lang="zh"]:hover {
+    background: var(--accent);
+    color: #fff;
   }
 </style>
