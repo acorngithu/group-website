@@ -58,9 +58,9 @@ export const join = {
       detailZh: "面议",
       description:
         "We are recruiting postdoctoral researchers, with particular interest in " +
-        "optical nanofabrication and analog integrated-circuit design.",
+        "optical nanofabrication, analog integrated-circuit design, and structured light.",
       descriptionZh:
-        "我们正在招募博士后研究员，尤其欢迎光学纳米加工与模拟集成电路设计方向的申请者。",
+        "我们正在招募博士后研究员，尤其欢迎光学纳米加工、模拟集成电路设计与结构光方向的申请者。",
       open: true,
       // ── Postdoc detail page at /join/postdoc — edit body / bodyZh below ──
       slug: "postdoc",
@@ -71,6 +71,7 @@ export const join = {
         [
           "<strong>Optical nanofabrication</strong> — integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate or thin-film photonic platforms, and related areas.",
           "<strong>Analog integrated circuit design</strong> — analog or mixed-signal circuit design, on-chip driving and readout, optoelectronic co-design, low-noise amplification, circuit modeling, and layout design.",
+          "<strong>Structured light</strong> — spatial light modulation, wavefront shaping, multimode and orbital-angular-momentum beams, mode multiplexing, holography, and complex beam engineering.",
         ],
         "<strong>How to apply:</strong> send a CV and a research statement to the email below.",
       ],
@@ -81,6 +82,7 @@ export const join = {
         [
           "<strong>光学纳米加工</strong> —— 集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂或薄膜光子平台及相关领域。",
           "<strong>模拟集成电路设计</strong> —— 模拟或混合信号电路设计、片上驱动与读出、光电协同设计、低噪声放大、电路建模与版图设计。",
+          "<strong>结构光</strong> —— 空间光调制、波前整形、多模与轨道角动量光束、模式复用、全息，以及复杂光束的调控。",
         ],
         "<strong>申请方式：</strong>请将个人简历与研究陈述发送至下方邮箱。",
       ],
