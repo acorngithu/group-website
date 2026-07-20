@@ -44,6 +44,11 @@ export const ui = {
     seePositions: b("See open positions →", "查看招聘岗位 →"),
   },
 
+  news: {
+    eyebrow: b("News", "动态"),
+    back: b("← Home", "← 返回主页"),
+  },
+
   research: {
     eyebrow: b("What we do", "我们的研究"),
     title: b("Research", "研究"),

@@ -1,0 +1,57 @@
+---
+// src/pages/news/[slug].astro — one news item's own page.
+// A page is generated for every item in src/data/news.ts that has a `slug`.
+// Items without a slug never reach here (they stay on the home strip only).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { news, formatDate, formatDateZh } from "../../data/news";
+import { ui } from "../../data/i18n";
+import Bi from "../../components/Bi.astro";
+
+export function getStaticPaths() {
+  return news
+    .filter((item) => item.slug)
+    .map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+
+const { item } = Astro.props;
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const body = item.body ?? [];
+const bodyZh = item.bodyZh ?? [];
+---
+
+<BaseLayout title={`${item.title} — News`} description={item.title}>
+  <main class="wrap">
+    <a class="back" href={BASE || "/"}><Bi en={ui.news.back.en} zh={ui.news.back.zh} /></a>
+
+    <header class="masthead">
+      <div class="eyebrow"><Bi en={ui.news.eyebrow.en} zh={ui.news.eyebrow.zh} /></div>
+      <h1><Bi en={item.title} zh={item.titleZh} /></h1>
+      <p class="news-date">
+        <time datetime={item.date}><Bi en={formatDate(item.date)} zh={formatDateZh(item.date)} /></time>
+      </p>
+    </header>
+
+    <div class="prose">
+      {body.map((para, i) => <p><Bi en={para} zh={bodyZh[i] ?? para} /></p>)}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.18s;
+  }
+  .back:hover,
+  .back:focus-visible { color: var(--ink); outline: none; }
+
+  .news-date { color: var(--accent); font-variant-numeric: tabular-nums; margin-top: 0.6rem; }
+
+  .prose { max-width: 68ch; }
+  .prose p { color: var(--ink); font-size: 1.08rem; line-height: 1.7; }
+  .prose p + p { margin-top: 1.1rem; }
+</style>

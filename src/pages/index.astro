@@ -79,8 +79,14 @@ const year = new Date().getFullYear();
                 </div>
                 <ul class="news-list">
                   {latestNews.map((item) => {
-                    const isExternal = item.url && /^https?:\/\//.test(item.url);
-                    const newsHref = item.url ? (isExternal ? item.url : href(item.url)) : undefined;
+                    // slug (own page) wins over url (link out); both are internal
+                    // except a full https:// url, which opens in a new tab.
+                    const isExternal = !item.slug && item.url && /^https?:\/\//.test(item.url);
+                    const newsHref = item.slug
+                      ? href(`/news/${item.slug}`)
+                      : item.url
+                        ? (isExternal ? item.url : href(item.url))
+                        : undefined;
                     return (
                       <li>
                         <time datetime={item.date}><Bi en={formatDate(item.date)} zh={formatDateZh(item.date)} /></time>
