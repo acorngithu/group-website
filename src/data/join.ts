@@ -57,10 +57,10 @@ export const join = {
       detail: "By arrangement",
       detailZh: "面议",
       description:
-        "We are recruiting postdoctoral researchers, with particular interest in " +
-        "optical nanofabrication, analog integrated-circuit design, and structured light.",
+        "We are recruiting postdoctoral researchers across experiment, theory, and " +
+        "machine learning. See the focus areas and how to apply.",
       descriptionZh:
-        "我们正在招募博士后研究员，尤其欢迎光学纳米加工、模拟集成电路设计与结构光方向的申请者。",
+        "我们正在招募博士后研究员，方向涵盖实验、理论与机器学习。点击查看具体方向与申请方式。",
       open: true,
       // ── Postdoc detail page at /join/postdoc — edit body / bodyZh below ──
       slug: "postdoc",
@@ -72,6 +72,8 @@ export const join = {
           "<strong>Optical nanofabrication</strong> — integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate or thin-film photonic platforms, and related areas.",
           "<strong>Analog integrated circuit design</strong> — analog or mixed-signal circuit design, on-chip driving and readout, optoelectronic co-design, low-noise amplification, circuit modeling, and layout design.",
           "<strong>Structured light</strong> — spatial light modulation, wavefront shaping, multimode and orbital-angular-momentum beams, mode multiplexing, holography, and complex beam engineering.",
+          "<strong>Theory and computation</strong> — statistical and nonlinear photonics, non-Hermitian and topological optics, multimode and nonequilibrium dynamics, and large-scale simulation.",
+          "<strong>Machine learning for physical systems</strong> — deep learning, physics-informed and in-situ training, differentiable and physical-hardware modeling, and optimization for photonic and analog computing.",
         ],
         "<strong>How to apply:</strong> send a CV and a research statement to the email below.",
       ],
@@ -83,6 +85,8 @@ export const join = {
           "<strong>光学纳米加工</strong> —— 集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂或薄膜光子平台及相关领域。",
           "<strong>模拟集成电路设计</strong> —— 模拟或混合信号电路设计、片上驱动与读出、光电协同设计、低噪声放大、电路建模与版图设计。",
           "<strong>结构光</strong> —— 空间光调制、波前整形、多模与轨道角动量光束、模式复用、全息，以及复杂光束的调控。",
+          "<strong>理论与计算</strong> —— 统计与非线性光子学、非厄米与拓扑光学、多模与非平衡动力学，以及大规模数值模拟。",
+          "<strong>面向物理系统的机器学习</strong> —— 深度学习、物理信息与原位训练、可微分与物理硬件建模，以及面向光子与模拟计算的优化。",
         ],
         "<strong>申请方式：</strong>请将个人简历与研究陈述发送至下方邮箱。",
       ],
