@@ -3,7 +3,11 @@
 // EDIT HERE to maintain group News (shown on the home page, newest first).
 //   • date  — ISO "YYYY-MM-DD" (used for sorting; displayed as "Jul 1, 2026").
 //   • title — the headline.
-//   • url   — optional link (paper, award page, announcement). Omit if none.
+//   • url   — optional link. Omit if the item has no page of its own.
+//               - external: a full "https://…" URL (paper DOI, award page,
+//                 press coverage) opens in a new tab.
+//               - internal: a site-relative path (e.g. "/research/reconfigurable-photonics",
+//                 "/pi", or a Publications entry) opens in the same tab.
 // The home page shows the most recent few. (A dedicated /news archive page can
 // be added later; the home strip would then link to it.)
 // ─────────────────────────────────────────────────────────────────────────

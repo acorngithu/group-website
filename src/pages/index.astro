@@ -78,12 +78,22 @@ const year = new Date().getFullYear();
                   <h2 class="label"><Bi en={ui.home.news.en} zh={ui.home.news.zh} /></h2>
                 </div>
                 <ul class="news-list">
-                  {latestNews.map((item) => (
-                    <li>
-                      <time datetime={item.date}><Bi en={formatDate(item.date)} zh={formatDateZh(item.date)} /></time>
-                      {item.url ? <a href={item.url} target="_blank" rel="noopener"><Bi en={item.title} zh={item.titleZh} /></a> : <span><Bi en={item.title} zh={item.titleZh} /></span>}
-                    </li>
-                  ))}
+                  {latestNews.map((item) => {
+                    const isExternal = item.url && /^https?:\/\//.test(item.url);
+                    const newsHref = item.url ? (isExternal ? item.url : href(item.url)) : undefined;
+                    return (
+                      <li>
+                        <time datetime={item.date}><Bi en={formatDate(item.date)} zh={formatDateZh(item.date)} /></time>
+                        {newsHref ? (
+                          <a href={newsHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener" : undefined}>
+                            <Bi en={item.title} zh={item.titleZh} />
+                          </a>
+                        ) : (
+                          <span><Bi en={item.title} zh={item.titleZh} /></span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             )
