@@ -11,7 +11,10 @@
 // `bodyZh` (Chinese), each an array of paragraphs. That builds a detail page at
 // /join/<slug>, and the position card links to it with a "Learn more →" link.
 //   • slug   — URL segment, lowercase-with-dashes, unique (e.g. "postdoc").
-//   • body / bodyZh — the full description shown on that page, one string each.
+//   • body / bodyZh — the full description shown on that page. Each entry is a
+//                paragraph (string); make an entry a string[] to render it as a
+//                bulleted list. body and bodyZh must line up entry-for-entry.
+//                Basic HTML is allowed (e.g. <strong>…</strong>).
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface Position {
@@ -23,8 +26,8 @@ export interface Position {
   descriptionZh: string;
   open: boolean;
   slug?: string; // set this to give the position its own page at /join/<slug>
-  body?: string[]; // full detail paragraphs (English) for that page
-  bodyZh?: string[]; // full detail paragraphs (Chinese)
+  body?: (string | string[])[]; // paragraph (string) or bullet list (string[])
+  bodyZh?: (string | string[])[]; // must line up entry-for-entry with `body`
 }
 
 export const join = {
@@ -62,20 +65,24 @@ export const join = {
       // ── Postdoc detail page at /join/postdoc — edit body / bodyZh below ──
       slug: "postdoc",
       body: [
-        "In the Wu Lab, we conduct cutting-edge research at the intersection of photonics, artificial intelligence, statistical physics, nonlinear dynamics, analog computing, and unconventional computing. The group will focus on programmable integrated photonic chips, optical thermodynamic computing, physical neural networks, and next-generation physical computing hardware for artificial intelligence.",
-        "We welcome outstanding young researchers with backgrounds in photonics, physics, electrical engineering, integrated circuits, artificial intelligence, nanofabrication, nonlinear dynamics, or related interdisciplinary fields. Together, we aim to explore a new generation of machines that compute by harnessing the natural dynamics of physical systems.",
-        "We are currently recruiting postdoctoral researchers, with a particular interest in candidates with backgrounds in the following areas:",
-        "<strong>Optical nanofabrication:</strong> experience in integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate photonics, thin-film photonic platforms, or related areas.",
-        "<strong>Analog integrated circuit design:</strong> experience in analog or mixed-signal circuit design, on-chip driving and readout circuits, optoelectronic co-design, low-noise amplification, circuit modeling, or layout design.",
-        "<strong>How to apply:</strong> applications for postdoctoral or research-assistant positions should include a CV and a research statement, sent to the email below.",
+        "The Wu Lab works at the intersection of photonics, artificial intelligence, statistical physics, and unconventional computing — building programmable photonic chips, optical thermodynamic computing, physical neural networks, and next-generation computing hardware for AI.",
+        "We welcome researchers from photonics, physics, electrical engineering, integrated circuits, AI, nanofabrication, and related fields to help build a new generation of machines that compute by harnessing the natural dynamics of physical systems.",
+        "We are currently recruiting postdoctoral researchers, with particular interest in candidates whose background is in:",
+        [
+          "<strong>Optical nanofabrication</strong> — integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate or thin-film photonic platforms, and related areas.",
+          "<strong>Analog integrated circuit design</strong> — analog or mixed-signal circuit design, on-chip driving and readout, optoelectronic co-design, low-noise amplification, circuit modeling, and layout design.",
+        ],
+        "<strong>How to apply:</strong> send a CV and a research statement to the email below.",
       ],
       bodyZh: [
-        "在吴凡实验室，我们在光子学、人工智能、统计物理、非线性动力学、模拟计算与非常规计算的交叉领域开展前沿研究。课题组将聚焦于可编程集成光子芯片、光学热力学计算、物理神经网络，以及面向人工智能的新一代物理计算硬件。",
-        "我们欢迎具有光子学、物理、电子工程、集成电路、人工智能、纳米加工、非线性动力学，或相关交叉学科背景的优秀青年学者加入。让我们一同探索新一代机器 —— 它们通过驾驭物理系统本身的自然动力学来完成计算。",
+        "吴凡实验室工作于光子学、人工智能、统计物理与非常规计算的交叉领域，致力于可编程光子芯片、光学热力学计算、物理神经网络，以及面向人工智能的新一代计算硬件。",
+        "我们欢迎来自光子学、物理、电子工程、集成电路、人工智能、纳米加工及相关领域的研究者加入，一同打造新一代机器 —— 它们通过驾驭物理系统本身的自然动力学来完成计算。",
         "我们目前正在招募博士后研究员，尤其欢迎具有以下方向背景的申请者：",
-        "<strong>光学纳米加工：</strong>具备集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂光子学、薄膜光子平台或相关领域经验者。",
-        "<strong>模拟集成电路设计：</strong>具备模拟或混合信号电路设计、片上驱动与读出电路、光电协同设计、低噪声放大、电路建模或版图设计经验者。",
-        "<strong>申请方式：</strong>申请博士后或研究助理职位，请提交个人简历与研究陈述，并发送至下方邮箱。",
+        [
+          "<strong>光学纳米加工</strong> —— 集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂或薄膜光子平台及相关领域。",
+          "<strong>模拟集成电路设计</strong> —— 模拟或混合信号电路设计、片上驱动与读出、光电协同设计、低噪声放大、电路建模与版图设计。",
+        ],
+        "<strong>申请方式：</strong>请将个人简历与研究陈述发送至下方邮箱。",
       ],
     },
     {
