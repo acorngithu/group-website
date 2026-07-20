@@ -25,20 +25,23 @@ const open = join.positions.filter((p) => p.open);
       {
         open.length > 0 ? (
           <div class="pos-list">
-            {open.map((p) => (
-              <article class="pos">
-                <div class="pos-head">
-                  <h3><Bi en={p.title} zh={p.titleZh} /></h3>
-                  {p.detail && <span class="pos-detail"><Bi en={p.detail} zh={p.detailZh ?? p.detail} /></span>}
-                </div>
-                <p><Bi en={p.description} zh={p.descriptionZh} /></p>
-                {p.slug && (
-                  <a class="pos-more" href={`${BASE}/join/${p.slug}`}>
-                    <Bi en={ui.join.learnMore.en} zh={ui.join.learnMore.zh} />
-                  </a>
-                )}
-              </article>
-            ))}
+            {open.map((p) => {
+              // Positions with a detail page render as a clickable link card;
+              // the rest stay as a plain (non-clickable) article.
+              const Tag = p.slug ? "a" : "article";
+              return (
+                <Tag class={p.slug ? "pos pos-link" : "pos"} href={p.slug ? `${BASE}/join/${p.slug}` : undefined}>
+                  <div class="pos-head">
+                    <h3><Bi en={p.title} zh={p.titleZh} /></h3>
+                    {p.detail && <span class="pos-detail"><Bi en={p.detail} zh={p.detailZh ?? p.detail} /></span>}
+                  </div>
+                  <p><Bi en={p.description} zh={p.descriptionZh} /></p>
+                  {p.slug && (
+                    <span class="pos-more"><Bi en={ui.join.learnMore.en} zh={ui.join.learnMore.zh} /></span>
+                  )}
+                </Tag>
+              );
+            })}
           </div>
         ) : (
           <p class="empty"><Bi en={ui.join.noPositions.en} zh={ui.join.noPositions.zh} /></p>
@@ -69,6 +72,22 @@ const open = join.positions.filter((p) => p.open);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.03);
   }
+  /* Positions with a detail page are a whole clickable card */
+  a.pos-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  a.pos-link:hover,
+  a.pos-link:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    outline: none;
+  }
   .pos-head {
     display: flex;
     flex-wrap: wrap;
@@ -92,18 +111,15 @@ const open = join.positions.filter((p) => p.open);
     border-radius: 999px;
   }
   .pos p { color: var(--muted); font-size: 0.98rem; }
+  /* Visual call-to-action inside the clickable card (not a link itself) */
   .pos-more {
     display: inline-block;
     margin-top: 0.9rem;
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--accent);
-    text-decoration: none;
-    border-bottom: 1px solid var(--accent-soft);
-    transition: border-color 0.18s;
   }
-  .pos-more:hover,
-  .pos-more:focus-visible { border-color: var(--accent); outline: none; }
+  a.pos-link:hover .pos-more { text-decoration: underline; text-underline-offset: 3px; }
 
   .prose { max-width: 68ch; }
   .prose p { color: var(--ink); font-size: 1.05rem; line-height: 1.7; }
