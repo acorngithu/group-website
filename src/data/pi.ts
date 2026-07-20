@@ -5,8 +5,6 @@
 //   • links   → omit any you don't have (empty string = hidden).
 //   • bio     → array of paragraphs.
 //   • awards  → one { } per award; shown newest-first as you order them.
-//   • selected → paper titles (or substrings) to feature on this page.
-//                Leave the array empty to auto-show the most recent few.
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface Award {
@@ -30,20 +28,16 @@ export const pi = {
   },
 
   bio: [
-    "Placeholder biography. Introduce the PI: current position, the through-line " +
-      "of the research, and what the group is known for.",
-    "A second paragraph — background and training, notable directions, and the " +
-      "vision guiding the group's work.",
+    "Fan Wu received his Ph.D. in Optics from the University of Central Florida in 2020, where he worked under the supervision of Prof. Demetrios Christodoulides. Since 2022, he has been conducting postdoctoral research at Cornell University. In 2027, he will join the School of Engineering at Westlake University as an Assistant Professor, where he will lead a research group working at the intersection of photonics, physical intelligence, and unconventional computing.",
+    "Outside of research, he enjoys video games, exercise, and coding."
   ],
   bioZh: [
-    "占位简介。请介绍 PI：现任职位、研究的贯穿主线，以及课题组为人所知的方向。",
-    "第二段 —— 学术背景与训练经历、代表性研究方向，以及引领课题组工作的愿景。",
+    "吴凡于2020年获得美国中佛罗里达大学光学博士学位，师从 Demetrios Christodoulides 教授。自2022年起，他在康奈尔大学从事博士后研究。2027年，他将加入西湖大学工学院任助理教授，并组建研究团队，开展光子学、物理智能与新型计算交叉方向的研究。",
+    "科研之外，他喜欢电子游戏、运动和编程。",
   ],
 
   awards: [
     { year: 2024, title: "Rising Stars of Light", org: "Light: Science & Applications, Springer Nature" },
     { year: 2024, title: "Eric and Wendy Schmidt AI in Science Fellowship", org: "Schmidt Sciences" },
   ] as Award[],
-
-  selected: [] as string[],
 };
