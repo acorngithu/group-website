@@ -54,24 +54,28 @@ export const join = {
       detail: "By arrangement",
       detailZh: "面议",
       description:
-        "We support fellowship applications and occasionally have funded " +
-        "openings. See the details for research areas and how to apply.",
+        "We are recruiting postdoctoral researchers, with particular interest in " +
+        "optical nanofabrication and analog integrated-circuit design.",
       descriptionZh:
-        "我们支持各类奖学金申请，并不时设有资助岗位。点击查看研究方向与申请方式。",
+        "我们正在招募博士后研究员，尤其欢迎光学纳米加工与模拟集成电路设计方向的申请者。",
       open: true,
       // ── Postdoc detail page at /join/postdoc — edit body / bodyZh below ──
       slug: "postdoc",
       body: [
-        "The group is recruiting postdoctoral researchers to work at the intersection of photonics, physical intelligence, and unconventional computing. Placeholder — describe the specific projects on offer, the research environment, and what a postdoc's day-to-day looks like.",
-        "We look for candidates who hold (or are close to completing) a PhD in physics, optics, electrical engineering, applied mathematics, or a related field, with a strong record in one or more of: multimode nonlinear photonics, analog / physical computing, machine learning, or theory and simulation. Placeholder — adjust to the profile you want.",
-        "Positions are available by arrangement: we actively support external fellowship applications and occasionally have directly funded openings. Placeholder — note the expected duration, funding, and start dates.",
-        "To apply, email a CV, a short statement of research interests, and the names of two or three references. Placeholder — add any application specifics or deadlines.",
+        "In the Wu Lab, we conduct cutting-edge research at the intersection of photonics, artificial intelligence, statistical physics, nonlinear dynamics, analog computing, and unconventional computing. The group will focus on programmable integrated photonic chips, optical thermodynamic computing, physical neural networks, and next-generation physical computing hardware for artificial intelligence.",
+        "We welcome outstanding young researchers with backgrounds in photonics, physics, electrical engineering, integrated circuits, artificial intelligence, nanofabrication, nonlinear dynamics, or related interdisciplinary fields. Together, we aim to explore a new generation of machines that compute by harnessing the natural dynamics of physical systems.",
+        "We are currently recruiting postdoctoral researchers, with a particular interest in candidates with backgrounds in the following areas:",
+        "<strong>Optical nanofabrication:</strong> experience in integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate photonics, thin-film photonic platforms, or related areas.",
+        "<strong>Analog integrated circuit design:</strong> experience in analog or mixed-signal circuit design, on-chip driving and readout circuits, optoelectronic co-design, low-noise amplification, circuit modeling, or layout design.",
+        "<strong>How to apply:</strong> applications for postdoctoral or research-assistant positions should include a CV and a research statement, sent to the email below.",
       ],
       bodyZh: [
-        "课题组正在招募博士后研究员，方向聚焦于光子学、物理智能与新型计算的交叉领域。占位文字 —— 请在此介绍可供选择的具体课题、科研环境，以及博士后的日常工作。",
-        "我们期望申请者已获得（或即将获得）物理、光学、电子工程、应用数学或相关领域的博士学位，并在以下一个或多个方向具有扎实积累：多模非线性光子学、模拟 / 物理计算、机器学习，或理论与仿真。占位文字 —— 请按你期望的人选画像进行调整。",
-        "岗位采取面议方式：我们积极支持各类外部奖学金申请，并不时设有直接资助的岗位。占位文字 —— 请在此说明预期的聘期、资助情况与入职时间。",
-        "申请请发送简历、一份简要的研究兴趣陈述，以及两至三位推荐人的姓名。占位文字 —— 请在此补充具体的申请要求或截止日期。",
+        "在吴凡实验室，我们在光子学、人工智能、统计物理、非线性动力学、模拟计算与非常规计算的交叉领域开展前沿研究。课题组将聚焦于可编程集成光子芯片、光学热力学计算、物理神经网络，以及面向人工智能的新一代物理计算硬件。",
+        "我们欢迎具有光子学、物理、电子工程、集成电路、人工智能、纳米加工、非线性动力学，或相关交叉学科背景的优秀青年学者加入。让我们一同探索新一代机器 —— 它们通过驾驭物理系统本身的自然动力学来完成计算。",
+        "我们目前正在招募博士后研究员，尤其欢迎具有以下方向背景的申请者：",
+        "<strong>光学纳米加工：</strong>具备集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂光子学、薄膜光子平台或相关领域经验者。",
+        "<strong>模拟集成电路设计：</strong>具备模拟或混合信号电路设计、片上驱动与读出电路、光电协同设计、低噪声放大、电路建模或版图设计经验者。",
+        "<strong>申请方式：</strong>申请博士后或研究助理职位，请提交个人简历与研究陈述，并发送至下方邮箱。",
       ],
     },
     {
