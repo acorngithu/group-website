@@ -56,11 +56,11 @@ export const research: Pillar[] = [
     animation: "reconfigurablePixels",
     description: [
       "Conventional photonic devices are fixed once fabricated, sensitive to manufacturing errors, and limited by the discretized index profiles that lithography allows. We build a reconfigurable 2D waveguide platform whose refractive-index landscape is written by a pattern of light shone from above — so the same chip is reprogrammed for a new task instead of re-fabricated. On a single device we have demonstrated communication functions such as mode permutation and Hermite–Gaussian conversion, alongside computing functions including arbitrary unitary matrix–vector multiplication.",
-      "Paired with real-time output detection and machine-learning feedback, the chip is trained toward a target function, closing the long-standing gap between simulation and experiment. This opens a path to programmable optical interconnects, adaptive error correction, ultra-broadband optical computing, programmable on-chip quantum-light sources, and optical accelerators for AI inference.",
+      "Paired with real-time output detection and machine-learning feedback, the chip is trained toward a target function, closing the long-standing gap between simulation and experiment. This opens a path to programmable optical interconnects, adaptive error correction, ultra-broadband optical computing, programmable on-chip quantum-light sources, and optical accelerators for AI inference. In a sense, such a chip is no longer something we merely fabricate but something that comes alive — it learns, adapts, and grows richer as time goes on.",
     ],
     descriptionZh: [
       "传统光子器件一旦制成便无法更改，既容易受制造误差影响，也受限于光刻工艺所能实现的离散折射率分布。我们搭建了一种可重构的二维波导平台：它的折射率分布由自上方投射的光场图案“写入”，因此同一块芯片无需重新流片，就能针对新任务重新编程。在单一器件上，我们已经演示了模式置换、厄米–高斯 (Hermite–Gaussian) 变换等通信功能，以及任意酉矩阵–向量乘法等计算功能。",
-      "再借助实时的输出探测与机器学习反馈，芯片被训练着逼近目标功能，长期横亘在仿真与实验之间的鸿沟就此弥合。这为可编程光互连、自适应纠错、超宽带光计算、可编程片上量子光源，以及面向 AI 推理的光学加速器等应用铺平了道路。",
+      "再借助实时的输出探测与机器学习反馈，芯片被训练着逼近目标功能，长期横亘在仿真与实验之间的鸿沟就此弥合。这为可编程光互连、自适应纠错、超宽带光计算、可编程片上量子光源，以及面向 AI 推理的光学加速器等应用铺平了道路。某种意义上，这样的芯片不再只是被制造出来的器件，而仿佛拥有了生命 —— 它会学习、会适应，也会随着时间不断成长。",
     ],
     references: [
       { authors: "S. Molesky et al.", title: "Inverse design in nanophotonics", venue: "Nature Photonics", year: 2018, url: "https://www.nature.com/articles/s41566-018-0246-9" },
