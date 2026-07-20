@@ -16,7 +16,7 @@ const known = new Set(roleSections.map((s) => s.role));
 const others = people.filter((p) => !p.role || !known.has(p.role));
 ---
 
-<BaseLayout title="People — Research Group" description="The people who make up the group." theme="dark">
+<BaseLayout title="People — Wu Lab" description="The people who make up the group." theme="dark">
   <main class="wrap">
     <header class="masthead">
       <div class="eyebrow"><Bi en={ui.people.eyebrow.en} zh={ui.people.eyebrow.zh} /></div>

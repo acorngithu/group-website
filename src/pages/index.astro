@@ -60,6 +60,7 @@ const year = new Date().getFullYear();
           <div class="hero-inner">
             <div class="eyebrow"><Bi en={site.institution} zh={site.institutionZh} /></div>
             <h1><Bi en={site.name} zh={site.nameZh} /></h1>
+            <p class="subname"><Bi en={site.subname} zh={site.subnameZh} /></p>
             {site.intro.map((para) => <p class="lead"><Bi en={para.en} zh={para.zh} /></p>)}
             <div class="cta-row">
               <a class="btn primary" href={href("/research")}><Bi en={ui.home.exploreResearch.en} zh={ui.home.exploreResearch.zh} /></a>
@@ -168,8 +169,16 @@ const year = new Date().getFullYear();
   .eyebrow { font-family: var(--display); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent2); display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.1rem; }
   .eyebrow::before { content: ""; width: 30px; height: 2px; background: var(--accent2); }
   .hero h1 { font-family: var(--display); font-size: clamp(2.6rem, 6.5vw, 4.6rem); font-weight: 700; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(100deg, #ffffff 55%, #7fa6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .subname {
+    font-family: var(--display);
+    font-size: clamp(1.05rem, 2.1vw, 1.42rem);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--accent2);
+    margin-top: 0.85rem;
+  }
   .lead { color: #c7d3e4; font-size: clamp(1.05rem, 1.6vw, 1.22rem); margin-top: 1.1rem; max-width: 52ch; }
-  .lead:first-of-type { margin-top: 1.2rem; }
+  .lead:first-of-type { margin-top: 1.4rem; }
 
   .cta-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.9rem; }
   .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.35rem; border-radius: 9px; font-weight: 600; font-family: var(--display); font-size: 0.95rem; text-decoration: none; border: 1px solid transparent; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; }
