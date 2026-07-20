@@ -20,7 +20,6 @@ const open = join.positions.filter((p) => p.open);
     <section class="positions" aria-label="Open positions">
       <h2 class="section-heading">
         <Bi en={ui.join.openPositions.en} zh={ui.join.openPositions.zh} />
-        {open.length > 0 && <span class="count">{open.length}</span>}
       </h2>
       {
         open.length > 0 ? (
