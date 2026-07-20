@@ -48,7 +48,7 @@ export const research: Pillar[] = [
   {
     slug: "reconfigurable-photonics",
     title: "Reconfigurable Photonic Chips",
-    titleZh: "可重构光子芯片 (Reconfigurable Photonic Chips)",
+    titleZh: "可重构光子芯片",
     tagline: "Photonic chips you train instead of just fabricate — reprogrammed on the fly with light.",
     taglineZh: "这样的光子芯片不是造出来的，而是“训练”出来的 —— 用光即时重新编程。",
     image: "/research/reconfigurable-photonics.jpg",
@@ -72,7 +72,7 @@ export const research: Pillar[] = [
   {
     slug: "optical-thermodynamic-computing",
     title: "Optical Thermodynamic Computing",
-    titleZh: "光学热力学计算 (Optical Thermodynamic Computing)",
+    titleZh: "光学热力学计算",
     tagline: "Computing with light's own thermal fluctuations — matrix inversion at a fraction of the energy.",
     taglineZh: "用光自身的热涨落进行计算 —— 以极低的能耗完成矩阵求逆。",
     image: "/research/optical-thermodynamic-computing.jpg",
@@ -97,7 +97,7 @@ export const research: Pillar[] = [
   {
     slug: "analog-neural-networks",
     title: "Analog Neural Networks",
-    titleZh: "模拟神经网络 (Analog Neural Networks)",
+    titleZh: "模拟信号神经网络",
     tagline: "Training physical systems until intelligence lives in the hardware itself.",
     taglineZh: "训练物理系统，直到智能栖息于硬件本身。",
     image: "/research/analog-neural-networks.jpg",
@@ -121,7 +121,7 @@ export const research: Pillar[] = [
   {
     slug: "complex-light-dynamics",
     title: "Complex Light Dynamics",
-    titleZh: "复杂光动力学 (Complex Light Dynamics)",
+    titleZh: "复杂光场动力学",
     tagline: "Light is both particle and wave — and each face opens onto strikingly rich physics.",
     taglineZh: "光既是粒子，也是波 —— 而它的每一面，都通向惊人丰富的物理。",
     image: "/research/complex-light-dynamics.jpg",

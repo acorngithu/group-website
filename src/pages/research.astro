@@ -35,6 +35,8 @@ const VISUAL: Record<string, { img?: string; fit?: string; anim?: string; trojan
             <a class="pillar" href={link(pillar.slug)} aria-label={pillar.title}>
               <div class="pillar-body">
                 <h2><Bi en={pillar.title} zh={pillar.titleZh} /></h2>
+                {/* English name as a subtitle — shows only in Chinese mode (lang-zh) */}
+                <span class="pillar-en lang-zh">{pillar.title}</span>
                 <p><Bi en={pillar.tagline} zh={pillar.taglineZh} /></p>
                 <span class="pillar-go"><Bi en={ui.research.explore.en} zh={ui.research.explore.zh} /> <span class="arr" aria-hidden="true">&rarr;</span></span>
               </div>
@@ -103,6 +105,15 @@ const VISUAL: Record<string, { img?: string; fit?: string; anim?: string; trojan
     letter-spacing: -0.01em;
     margin: 0;
     text-wrap: balance;
+  }
+  /* English name shown under the Chinese title (Chinese mode only) */
+  .pillar-en {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: rgba(226, 236, 252, 0.6);
   }
   .pillar-body p {
     font-size: clamp(0.95rem, 1.4vw, 1.06rem);
