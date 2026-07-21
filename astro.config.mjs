@@ -3,11 +3,12 @@ import { defineConfig } from 'astro/config';
 
 // Static output — Astro emits portable static files (China-safe, portable host).
 //
-// GitHub Pages deploy step (done later): set `site` and `base` here.
-//   • Project site (user.github.io/<repo>):  site: 'https://<user>.github.io', base: '/<repo>'
-//   • User/org site (<user>.github.io):       site: 'https://<user>.github.io'  (no base)
+// Served from the custom apex domain fanowu.com, so the site lives at the root
+// (base '/'). The domain is pinned via public/CNAME so it survives every deploy.
+// (If ever reverting to the project Pages URL: site 'https://acorngithu.github.io',
+//  base '/group-website'.)
 export default defineConfig({
-  site: 'https://acorngithu.github.io',
-  base: '/group-website',
+  site: 'https://fanowu.com',
+  base: '/',
   output: 'static',
 });
