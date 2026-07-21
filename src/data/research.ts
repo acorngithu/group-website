@@ -17,8 +17,6 @@
 //                   give readers the wider context. { authors, title, venue,
 //                   year, url? }.
 //
-// NOTE: draft generated from Fan O. Wu's research statement, CV, work plan, and
-// lab-overview slides. Please review wording + references for accuracy.
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface Reference {

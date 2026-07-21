@@ -57,7 +57,7 @@ export const news: NewsItem[] = [
   },
   {
     date: "2026-07-19",
-    title: "Our lab will be launched in January 2027.",
+    title: "Our lab will be officially launched in January 2027.",
     titleZh: "实验室将于 2027 年 1 月正式成立。",
   },
 
