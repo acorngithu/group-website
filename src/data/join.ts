@@ -65,30 +65,29 @@ export const join = {
       // ── Postdoc detail page at /join/postdoc — edit body / bodyZh below ──
       slug: "postdoc",
       body: [
-        "The Wu Lab works at the intersection of photonics, artificial intelligence, statistical physics, and unconventional computing — building programmable photonic chips, optical thermodynamic computing, physical neural networks, and next-generation computing hardware for AI.",
-        "We welcome researchers from photonics, physics, electrical engineering, integrated circuits, AI, nanofabrication, and related fields to help build a new generation of machines that compute by harnessing the natural dynamics of physical systems.",
-        "We are currently recruiting postdoctoral researchers, with particular interest in candidates whose background is in:",
+        "We welcome researchers from a wide range of backgrounds—including photonics, physics, electrical engineering, integrated circuits, artificial intelligence, nanofabrication, and related fields—who share our curiosity about science and our passion for building new technologies. Our research spans fundamental physics, emerging photonic platforms, physical intelligence, and unconventional approaches to computing.",
+        "We are currently recruiting postdoctoral researchers whose interests align with these directions. We are particularly interested in, but not limited to, candidates with backgrounds in:",
         [
           "<strong>Optical nanofabrication</strong> — integrated photonic device design and fabrication, photonic chip testing, silicon photonics, lithium niobate or thin-film photonic platforms, and related areas.",
           "<strong>Analog integrated circuit design</strong> — analog or mixed-signal circuit design, on-chip driving and readout, optoelectronic co-design, low-noise amplification, circuit modeling, and layout design.",
           "<strong>Structured light</strong> — spatial light modulation, wavefront shaping, multimode and orbital-angular-momentum beams, mode multiplexing, holography, and complex beam engineering.",
-          "<strong>Theory and computation</strong> — statistical and nonlinear photonics, non-Hermitian and topological optics, multimode and nonequilibrium dynamics, and large-scale simulation.",
+          "<strong>Theory and computation</strong> — nonlinear optics, non-Hermitian and topological optics, multimode and nonequilibrium dynamics.",
           "<strong>Machine learning for physical systems</strong> — deep learning, physics-informed and in-situ training, differentiable and physical-hardware modeling, and optimization for photonic and analog computing.",
         ],
-        "<strong>How to apply:</strong> send a CV and a research statement to the email below.",
+        "<strong>How to apply:</strong> send a CV and a research statement directly to the PI via email.",
       ],
       bodyZh: [
-        "吴凡实验室工作于光子学、人工智能、统计物理与非常规计算的交叉领域，致力于可编程光子芯片、光学热力学计算、物理神经网络，以及面向人工智能的新一代计算硬件。",
-        "我们欢迎来自光子学、物理、电子工程、集成电路、人工智能、纳米加工及相关领域的研究者加入，一同打造新一代机器 —— 它们通过驾驭物理系统本身的自然动力学来完成计算。",
+        "我们欢迎来自不同学科背景的研究者加入，包括光子学、物理学、电子工程、集成电路、人工智能、微纳加工及相关领域。只要你对科学怀有好奇、对创造新技术充满热情，我们都期待与你相遇。我们的研究涵盖基础物理、新型光子学平台、物理智能，以及不同于传统数字计算的新型计算方式。",
+        "目前，我们正在招募研究方向与上述领域相关的博士后研究人员。我们尤其欢迎，但不限于，具有以下背景的申请者：",
         "我们目前正在招募博士后研究员，尤其欢迎具有以下方向背景的申请者：",
         [
           "<strong>光学纳米加工</strong> —— 集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂或薄膜光子平台及相关领域。",
           "<strong>模拟集成电路设计</strong> —— 模拟或混合信号电路设计、片上驱动与读出、光电协同设计、低噪声放大、电路建模与版图设计。",
           "<strong>结构光</strong> —— 空间光调制、波前整形、多模与轨道角动量光束、模式复用、全息，以及复杂光束的调控。",
-          "<strong>理论与计算</strong> —— 统计与非线性光子学、非厄米与拓扑光学、多模与非平衡动力学，以及大规模数值模拟。",
+          "<strong>理论与计算</strong>——非线性光学、非厄米与拓扑光学、多模动力学、非平衡动力学等相关方向。",
           "<strong>面向物理系统的机器学习</strong> —— 深度学习、物理信息与原位训练、可微分与物理硬件建模，以及面向光子与模拟计算的优化。",
         ],
-        "<strong>申请方式：</strong>请将个人简历与研究陈述发送至下方邮箱。",
+        "<strong>申请方式：</strong>请将个人简历和研究陈述通过电子邮件直接发送给课题组负责人。",
       ],
     },
     {
@@ -115,5 +114,5 @@ export const join = {
     "请注明你感兴趣的岗位或研究方向，以便我们将你的咨询转交给合适的人。",
   ],
 
-  contactEmail: "recruit@university.edu",
+  contactEmail: "wufan@westlake.edu.cn",
 };
