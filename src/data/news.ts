@@ -42,7 +42,7 @@ export const news: NewsItem[] = [
     title: "2027 Fall PhD applications are open.",
     titleZh: "2027 年秋季博士生申请现已开启。",
     slug: "phd-hiring-2027",
-    image: "/news/Hiring_flyer_2027.png",
+    image: "/news/Hiring_flyer_2027_downscaled.webp",
     imageAlt: "2027 hiring flyer 中文",
     caption: "Recruitment flyer",
     captionZh: "招生海报",
