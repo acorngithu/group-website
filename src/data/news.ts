@@ -8,7 +8,9 @@
 // `bodyZh` (Chinese), each an array of paragraphs. That builds a page at
 // /news/<slug>, and the home strip links the headline to it automatically.
 //   • slug   — URL segment, lowercase-with-dashes, unique (e.g. "phd-hiring-2027").
-//   • body / bodyZh — paragraphs of the full story, one string each.
+//   • body / bodyZh — paragraphs of the full story, one string each. Inline HTML
+//                is allowed; for an internal link write <a href="{base}/join">…</a>
+//                ({base} is replaced with the site's base path when rendered).
 //
 // OR link OUT instead (no page of its own) — set `url`:
 //   • external: a full "https://…" URL (paper DOI, award page, press) → new tab.
@@ -36,11 +38,11 @@ export const news: NewsItem[] = [
     slug: "phd-hiring-2027",
     body: [
       "We are recruiting PhD students to join the group in Fall 2027. Placeholder — describe the projects on offer, funding, and the background we're looking for.",
-      "Interested applicants can find details on the Join page, or email us directly.",
+      "Interested applicants can find details on the <a href=\"{base}/join\">Join page</a>, or email us directly.",
     ],
     bodyZh: [
       "我们正在招收将于 2027 年秋季入学的博士生。占位文字 —— 请在此介绍拟招募的课题方向、资助情况，以及我们期望的申请人背景。",
-      "有意者可在「加入我们」页面了解详情，或直接来信联系。",
+      "有意者可在<a href=\"{base}/join\">「加入我们」页面</a>了解详情，或直接来信联系。",
     ],
   },
   {
