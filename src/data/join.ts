@@ -46,9 +46,9 @@ export const join = {
       detailZh: "全额奖学金",
       description:
         "We welcome applications from strong candidates with a background in " +
-        "physics, optics, electrical engineering, and computer science for the admission of 2027 Fall",
+        "physics, optics, electrical engineering, and computer science for Fall 2027 admission",
       descriptionZh:
-        "我们欢迎具有物理，光学，电子工程，和计算机背景的优秀申请者申请2027秋季PhD",
+        "我们欢迎具有物理、光学、电子工程、和计算机背景的优秀申请者申请2027秋季博士生",
       open: true,
     },
     {
@@ -103,15 +103,15 @@ export const join = {
   howToApply: [
     "Send a brief email introducing your background and research interests, together with the following materials:",
     [
-      "PhD applicants: CV and academic transcripts, preferably with class ranking.",
-      "Postdoctoral applicants: CV and a brief statement of research interests.",
+      "Students applicants: CV and academic transcripts, preferably with class ranking.",
+      "Postdocs and senior researchers: CV and a brief statement of research interests.",
     ],
   ],
   howToApplyZh: [
     "请发送一封简短的邮件，介绍你的背景与研究兴趣，并附上以下材料：",
     [
-      "博士申请者：个人简历与成绩单（最好注明专业排名）。",
-      "博士后申请者：个人简历与一份简要的研究兴趣陈述。",
+      "学生申请者：个人简历与成绩单（最好注明专业排名）。",
+      "博士后及资深研究人员：个人简历与一份简要的研究兴趣陈述。",
     ],
   ],
 

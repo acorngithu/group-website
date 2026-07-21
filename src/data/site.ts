@@ -33,8 +33,8 @@ export const site = {
   ],
 
   // Shown as the home eyebrow and in the footer.
-  institution: "Department · University",
-  institutionZh: "院系 · 大学",
+  institution: "School of Engineering · Westlake University",
+  institutionZh: "工学院 · 西湖大学",
 
   // Google Scholar profile — the canonical full publication list.
   scholar: "https://scholar.google.com/citations?user=Fuwe_nEAAAAJ&hl=en",

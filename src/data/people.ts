@@ -32,29 +32,29 @@ export const people: Person[] = [
     role: "pi",
     profile: "/pi",
   },
-  {
-    nameEn: "Amina Hassan",
-    nameNative: "أمينة حسن",
-    email: "amina.hassan@university.edu",
-    website: "https://aminahassan.example.com",
-    photo: "/people/amina-hassan.jpg",
-    role: "postdoc",
-  },
-  {
-    nameEn: "Kenji Tanaka",
-    nameNative: "田中 健二",
-    email: "k.tanaka@university.edu",
-    website: "https://tanaka-lab.example.com",
-    photo: "/people/kenji-tanaka.jpg",
-    role: "postdoc",
-  },
-  {
-    nameEn: "Mei Lin",
-    nameNative: "林梅",
-    email: "mei.lin@university.edu",
-    photo: "/people/mei-lin.jpg",
-    role: "postdoc",
-  },
+  // {
+  //   nameEn: "Amina Hassan",
+  //   nameNative: "أمينة حسن",
+  //   email: "amina.hassan@university.edu",
+  //   website: "https://aminahassan.example.com",
+  //   photo: "/people/amina-hassan.jpg",
+  //   role: "postdoc",
+  // },
+  // {
+  //   nameEn: "Kenji Tanaka",
+  //   nameNative: "田中 健二",
+  //   email: "k.tanaka@university.edu",
+  //   website: "https://tanaka-lab.example.com",
+  //   photo: "/people/kenji-tanaka.jpg",
+  //   role: "postdoc",
+  // },
+  // {
+  //   nameEn: "Mei Lin",
+  //   nameNative: "林梅",
+  //   email: "mei.lin@university.edu",
+  //   photo: "/people/mei-lin.jpg",
+  //   role: "postdoc",
+  // },
 
   // ── add more people below ──
 ];
