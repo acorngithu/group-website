@@ -51,7 +51,21 @@ const open = join.positions.filter((p) => p.open);
     <section class="apply" aria-label="How to apply">
       <h2 class="section-heading"><Bi en={ui.join.howToApply.en} zh={ui.join.howToApply.zh} /></h2>
       <div class="prose">
-        {join.howToApply.map((para, i) => <p><Bi en={para} zh={join.howToApplyZh[i]} /></p>)}
+        {
+          join.howToApply.map((para, i) => {
+            const zh = join.howToApplyZh[i];
+            // A string[] entry renders as a bulleted list; a string as a paragraph.
+            return Array.isArray(para) ? (
+              <ul class="bullets">
+                {para.map((item, j) => (
+                  <li><Bi en={item} zh={(Array.isArray(zh) ? zh[j] : undefined) ?? item} /></li>
+                ))}
+              </ul>
+            ) : (
+              <p><Bi en={para} zh={(typeof zh === "string" ? zh : undefined) ?? para} /></p>
+            );
+          })
+        }
       </div>
       <a class="contact" href={`mailto:${join.contactEmail}`}>{join.contactEmail}</a>
     </section>
@@ -123,6 +137,32 @@ const open = join.positions.filter((p) => p.open);
   .prose { max-width: 68ch; }
   .prose p { color: var(--ink); font-size: 1.05rem; line-height: 1.7; }
   .prose p + p { margin-top: 0.9rem; }
+
+  /* Bulleted list inside .prose (a string[] entry in howToApply) */
+  .bullets {
+    list-style: none;
+    margin: 0.9rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .bullets li {
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+  .bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0.1rem;
+    top: 0.6em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background: var(--accent);
+  }
 
   .contact {
     display: inline-block;

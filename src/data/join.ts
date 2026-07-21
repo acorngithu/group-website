@@ -79,7 +79,6 @@ export const join = {
       bodyZh: [
         "我们欢迎来自不同学科背景的研究者加入，包括光子学、物理学、电子工程、集成电路、人工智能、微纳加工及相关领域。只要你对科学怀有好奇、对创造新技术充满热情，我们都期待与你相遇。我们的研究涵盖基础物理、新型光子学平台、物理智能，以及不同于传统数字计算的新型计算方式。",
         "目前，我们正在招募研究方向与上述领域相关的博士后研究人员。我们尤其欢迎，但不限于，具有以下背景的申请者：",
-        "我们目前正在招募博士后研究员，尤其欢迎具有以下方向背景的申请者：",
         [
           "<strong>光学纳米加工</strong> —— 集成光子器件设计与制造、光子芯片测试、硅基光子学、铌酸锂或薄膜光子平台及相关领域。",
           "<strong>模拟集成电路设计</strong> —— 模拟或混合信号电路设计、片上驱动与读出、光电协同设计、低噪声放大、电路建模与版图设计。",
@@ -102,16 +101,18 @@ export const join = {
   ] as Position[],
 
   howToApply: [
-    "Placeholder: send a short email describing your background and interests, " +
-      "along with a CV and (for PhD/postdoc) a brief statement of research " +
-      "interests.",
-    "Mention which position or research pillar you're interested in, so we can " +
-      "route your enquiry to the right person.",
+    "Send a brief email introducing your background and research interests, together with the following materials:",
+    [
+      "PhD applicants: CV and academic transcripts, preferably with class ranking.",
+      "Postdoctoral applicants: CV and a brief statement of research interests.",
+    ],
   ],
   howToApplyZh: [
-    "占位文字：请发送一封简短的邮件，介绍你的背景与研究兴趣，并附上简历；" +
-      "（博士 / 博士后申请者）请另附一份简要的研究兴趣陈述。",
-    "请注明你感兴趣的岗位或研究方向，以便我们将你的咨询转交给合适的人。",
+    "请发送一封简短的邮件，介绍你的背景与研究兴趣，并附上以下材料：",
+    [
+      "博士申请者：个人简历与成绩单（最好注明专业排名）。",
+      "博士后申请者：个人简历与一份简要的研究兴趣陈述。",
+    ],
   ],
 
   contactEmail: "wufan@westlake.edu.cn",
