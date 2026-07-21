@@ -134,6 +134,14 @@ const year = new Date().getFullYear();
     font-weight: 400 700;
     font-display: swap;
   }
+  /* Same self-hosted serif the rest of the site uses for the header brand, so
+     "Wu Lab" matches across pages (falls back to Georgia if the file is absent). */
+  @font-face {
+    font-family: "Newsreader";
+    src: url("/fonts/Newsreader.woff2") format("woff2");
+    font-weight: 400 500;
+    font-display: swap;
+  }
 
   :root {
     --hbg: #0a1119;
@@ -145,6 +153,7 @@ const year = new Date().getFullYear();
     --line: rgba(255, 255, 255, 0.1);
     --card: rgba(18, 28, 42, 0.55);
     --display: "SpaceGrotesk", system-ui, sans-serif;
+    --serif: "Newsreader", Georgia, serif;
     --sans: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   }
 
@@ -157,7 +166,8 @@ const year = new Date().getFullYear();
 
   header.hd { position: absolute; top: 0; left: 0; right: 0; z-index: 3; }
   header.hd .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 74px; flex-wrap: wrap; }
-  .brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.01em; text-decoration: none; color: #fff; }
+  /* Matches .brand in BaseLayout.astro so the header identity is consistent site-wide */
+  .brand { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); white-space: nowrap; }
   .nav-right { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem 1.2rem; }
   .hd nav { display: flex; flex-wrap: wrap; gap: 1.4rem; font-size: 0.9rem; }
   .hd nav a { color: var(--muted); text-decoration: none; transition: color 0.18s; }
