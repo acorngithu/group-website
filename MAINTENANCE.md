@@ -118,6 +118,33 @@ modes (nothing breaks). Publications and references stay in English by design.
 
 ---
 
+## Visitor analytics (private — only you can see it)
+
+The site has a **private page-view counter** via **Cloudflare Web Analytics**.
+No number shows on the public site; the data lives only in *your* Cloudflare
+dashboard.
+
+- **Where to read it:** Cloudflare → **Analytics & Logs → Web Analytics →
+  fanowu.com**. Shows page views, unique visitors, top pages, countries, and
+  referrers. New data appears within ~30 min of real visits (cookie-less, no
+  consent banner needed).
+- **How it works:** one tiny beacon script lives in a single file,
+  **`src/components/Analytics.astro`**, and is included in the `<head>` of every
+  page (via `BaseLayout.astro` and the standalone `index.astro`). The `token` in
+  that file is a **public site identifier, not a secret** — it grants no access
+  to your data.
+- **The one exception to the self-host rule:** this beacon is loaded from
+  Cloudflare's servers — the site's *only* externally-hosted asset. It's
+  `defer`-loaded and never blocks rendering, so **if it's ever blocked (e.g. in
+  mainland China) the page still loads perfectly** — those visitors just aren't
+  counted, so the visitor total reads slightly low. That's the accepted trade-off
+  for having any counter at all on a static site.
+- **To remove analytics entirely:** delete `src/components/Analytics.astro` and
+  the two `import Analytics …` + `<Analytics />` lines in `BaseLayout.astro` and
+  `index.astro`, then commit + push. (This is also noted inside the component.)
+
+---
+
 ## Troubleshooting
 
 **"I pushed but the change didn't appear."** Most likely a **build error** (usually
