@@ -1,0 +1,21 @@
+---
+// src/components/Analytics.astro — Cloudflare Web Analytics beacon (private, cookie-less).
+//
+// This is the ONE place the analytics tag lives. It reports page views to YOUR
+// Cloudflare dashboard (Analytics & Logs → Web Analytics) — visible only to you.
+//
+// Note on the China rule: this is the site's only externally-hosted asset. It is
+// loaded with `defer` and never blocks rendering; if it is ever unreachable
+// (possible in mainland China), the page still loads perfectly — you just
+// under-count those visitors. To remove analytics entirely, delete the two
+// <Analytics /> imports in BaseLayout.astro and index.astro (and this file).
+//
+// The token below is a public site identifier, NOT a secret — it only says
+// "attribute these views to fanowu.com". It grants no access to your data.
+---
+<script
+  is:inline
+  defer
+  src="https://static.cloudflareinsights.com/beacon.min.js"
+  data-cf-beacon='{"token": "b71b7f5cf87a4c64ac7c1d4096cddb0e"}'
+></script>

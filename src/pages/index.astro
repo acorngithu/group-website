@@ -8,6 +8,7 @@ import { news, formatDate, formatDateZh } from "../data/news";
 import { ui, langBootScript } from "../data/i18n";
 import Bi from "../components/Bi.astro";
 import LangToggle from "../components/LangToggle.astro";
+import Analytics from "../components/Analytics.astro";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const href = (p: string) => (p === "/" ? BASE || "/" : BASE + p);
@@ -32,6 +33,7 @@ const year = new Date().getFullYear();
     <meta name="description" content={site.tagline} />
     <link rel="icon" href={`${BASE}/favicon.svg`} />
     <script is:inline set:html={langBootScript} />
+    <Analytics />
     <style is:global>
       /* Home is standalone (no BaseLayout), so it needs its own copy of the
          language-visibility rule that global.css provides to every other page. */

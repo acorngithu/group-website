@@ -7,6 +7,7 @@ import { site } from "../data/site";
 import { ui, langBootScript } from "../data/i18n";
 import Bi from "../components/Bi.astro";
 import LangToggle from "../components/LangToggle.astro";
+import Analytics from "../components/Analytics.astro";
 
 interface Props {
   title: string;
@@ -51,6 +52,7 @@ const year = new Date().getFullYear();
     <meta name="description" content={description} />
     <link rel="icon" href={`${BASE}/favicon.svg`} />
     <script is:inline set:html={langBootScript} />
+    <Analytics />
     <title>{title}</title>
   </head>
   <body class:list={[{ "theme-dark": theme === "dark" }]}>
