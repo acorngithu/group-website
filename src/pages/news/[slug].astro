@@ -38,7 +38,13 @@ const withBase = (s: string) => s.replaceAll("{base}", BASE || "");
 
     {
       item.image && (
-        <figure class="news-figure">
+        <figure
+          class:list={[
+            "news-figure",
+            item.imageLang === "zh" && "lang-zh",
+            item.imageLang === "en" && "lang-en",
+          ]}
+        >
           <img
             src={/^https?:\/\//.test(item.image) ? item.image : BASE + item.image}
             alt={item.imageAlt ?? item.title}

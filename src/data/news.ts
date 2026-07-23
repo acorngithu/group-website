@@ -31,6 +31,7 @@ export interface NewsItem {
   // A flyer / figure shown on the item's own page (needs a slug). Put the file
   // in public/news/ and reference it here as "/news/<file>". Any shape works.
   image?: string; // e.g. "/news/phd-flyer.png"
+  imageLang?: "en" | "zh"; // show the image ONLY in this language. Omit = both.
   imageAlt?: string; // accessible description (falls back to the title)
   caption?: string; // optional caption under the image (English)
   captionZh?: string; // optional caption (Chinese)
@@ -43,6 +44,7 @@ export const news: NewsItem[] = [
     titleZh: "2027 年秋季博士生申请现已开启。",
     slug: "phd-hiring-2027",
     image: "/news/Hiring_flyer_2027_downscaled.webp",
+    imageLang: "zh", // flyer is in Chinese — hide it in the English view
     imageAlt: "2027 hiring flyer 中文",
     caption: "Recruitment flyer",
     captionZh: "招生海报",
