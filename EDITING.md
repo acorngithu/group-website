@@ -194,6 +194,28 @@ url: "/publications",                  // internal site path → same tab
 **Precedence:** `slug` (own page) → `url` (link out) → plain text. Use at most one of
 `slug` / `url` per item.
 
+**Add an image / flyer** (only on an item that has its own page, i.e. a `slug`).
+Put the file in `public/news/` and reference it with a leading-slash path:
+```ts
+{
+  date: "2026-07-21",
+  title: "2027 Fall PhD applications are open.",
+  titleZh: "2027 年秋季博士生申请现已开启。",
+  slug: "phd-hiring-2027",
+  image:     "/news/phd-flyer.webp", // file lives in public/news/
+  imageLang: "zh",                    // OPTIONAL — show only in this language
+  imageAlt:  "2027 PhD recruitment flyer", // accessible description
+  caption:   "Recruitment flyer",     // OPTIONAL caption under the image (EN)
+  captionZh: "招生海报",               // OPTIONAL caption (中文)
+  body:   ["…"],
+  bodyZh: ["…"],
+},
+```
+- **`imageLang`** — set to `"zh"` to show the image **only in the Chinese view**, or
+  `"en"` for **English only**. **Omit it** to show in both (the default). Handy when a
+  flyer is written in just one language (e.g. a Chinese-only recruitment poster).
+- Keep flyers small (≤ ~300 KB, WebP preferred) — see **Images** below.
+
 ### Edit Join / positions
 In `src/data/join.ts`: edit `intro`, the `positions` list (set `open: false` to hide a role
 without deleting it), `howToApply`, and `contactEmail`.
