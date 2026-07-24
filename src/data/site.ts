@@ -24,11 +24,11 @@ export const site = {
   intro: [
     {
       en: "We are drawn to problems that are fundamentally interesting, practically important, and, when possible, both. We explore them through theory, computation, and experiment.",
-      zh: "我们关注那些在基础科学上引人入胜、或者在现实世界中富有价值的问题；而最令人振奋的，往往是二者兼具。我们通过理论、计算与实验，探索这些问题背后的规律与可能。",
+      zh: "我们既关注在基础科学层面真正有趣的问题，也重视能够在实际应用中发挥价值的方向。最理想的情况，是一个问题同时兼具二者。我们结合理论、计算与实验，理解其中的基本规律，并探索将这些规律转化为新方法与新技术的可能。",
     },
     {
       en: "Our work spans new ways of computing, different forms of intelligence, the complex behavior of light, and emerging photonic platforms. Across these areas, we seek simple principles underlying complex phenomena and new capabilities that emerge when physical limits are treated not merely as constraints, but as resources.",
-      zh: "我们的研究涵盖全新的计算范式、智能的不同形式、光的复杂行为，以及新型光子平台。我们力求从纷繁的现象中提炼出简单的原理，也在探寻这样一种可能：当物理极限不再被当作束缚、而被善用为资源时，会有怎样的新能力就此浮现。",
+      zh: "我们的研究涵盖全新的计算范式、智能的不同形式、光的复杂行为，以及新型光子平台，力求从纷繁的现象中提炼出简单的原理，也在探寻这样一种可能：当物理极限不再被当作束缚、而被善用为资源时，会有怎样的新能力就此浮现。",
     },
   ],
 
