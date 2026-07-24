@@ -103,15 +103,15 @@ export const join = {
   howToApply: [
     "Send a brief email introducing your background and research interests, together with the following materials:",
     [
-      "Students applicants: CV and academic transcripts, preferably with class ranking.",
-      "Postdocs and senior researchers: CV and a brief statement of research interests.",
+      "Student applicants: CV and academic transcripts, preferably with class ranking. For more information, see the university's <a href=\"https://en.westlake.edu.cn/admissions/graduate/\" target=\"_blank\" rel=\"noopener\">graduate admissions page</a>.",
+      "Postdocs and senior researchers: CV and a brief research statement.",
     ],
   ],
   howToApplyZh: [
     "请发送一封简短的邮件，介绍你的背景与研究兴趣，并附上以下材料：",
     [
-      "学生申请者：个人简历与成绩单（最好注明专业排名）。",
-      "博士后及资深研究人员：个人简历与一份简要的研究兴趣陈述。",
+      "学生申请者：个人简历与成绩单（最好注明专业排名）。更多信息可访问学校的<a href=\"https://www.westlake.edu.cn/admissions/graduate/?first=%E6%8B%9B%E7%94%9F%E7%AE%80%E7%AB%A0&amp;second=%E6%99%AE%E5%8D%9A%E7%94%9F\" target=\"_blank\" rel=\"noopener\">官方招生网站</a>。",
+      "博士后及资深研究人员：个人简历与一份简要的研究陈述。",
     ],
   ],
 
