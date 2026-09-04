@@ -1,0 +1,15 @@
+# Cloudflare-only configuration.
+#
+# GitHub Pages does not support custom headers and ignores this file completely,
+# so these rules apply ONLY to the Cloudflare deployment (cf.fanowu.com and the
+# *.workers.dev URLs) — never to the live public site at https://fanowu.com.
+#
+# Purpose: cf.fanowu.com is a duplicate staging/test copy of the real site. This
+# keeps it out of Google and other search engines so it can never compete with,
+# or be mistaken for, the real site.
+#
+# NOTE: deliberately NOT done via robots.txt "Disallow". Blocking a crawler stops
+# it reading the page, so it never sees a noindex instruction — and a blocked URL
+# can still get indexed from inbound links. X-Robots-Tag is the correct tool.
+/*
+  X-Robots-Tag: noindex, nofollow
