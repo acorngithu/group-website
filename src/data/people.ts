@@ -42,7 +42,7 @@ export const people: Person[] = [
   {
     nameEn: "Monica",
     nameNative: "郭佳静",
-    email: "guojiajing@westlake.edu.cn"
+    email: "guojiajing@westlake.edu.cn",
     photo: "/people/jiajing-guo.jpg",
     role: "admin",
   },
