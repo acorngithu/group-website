@@ -32,14 +32,13 @@ export const people: Person[] = [
     role: "pi",
     profile: "/pi",
   },
-  // {
-  //   nameEn: "Amina Hassan",
-  //   nameNative: "أمينة حسن",
-  //   email: "amina.hassan@university.edu",
-  //   website: "https://aminahassan.example.com",
-  //   photo: "/people/amina-hassan.jpg",
-  //   role: "postdoc",
-  // },
+  {
+    nameEn: "Luyue He",
+    nameNative: "何鲁越",
+    website: "https://luyue0926.github.io/",
+    photo: "/people/luyue-he.jpg",
+    role: "phd",
+  },
   // {
   //   nameEn: "Kenji Tanaka",
   //   nameNative: "田中 健二",
