@@ -11,7 +11,7 @@
 // nameNative, email, and website are all optional — omit any you don't have.
 // ─────────────────────────────────────────────────────────────────────────
 
-export type Role = "pi" | "postdoc" | "phd" | "msc" | "undergrad" | "alumni";
+export type Role = "pi" | "admin" | "postdoc" | "phd" | "undergrad" | "alumni" | "msc" ;
 
 export interface Person {
   nameEn: string;
@@ -39,14 +39,13 @@ export const people: Person[] = [
     photo: "/people/luyue-he.jpg",
     role: "phd",
   },
-  // {
-  //   nameEn: "Kenji Tanaka",
-  //   nameNative: "田中 健二",
-  //   email: "k.tanaka@university.edu",
-  //   website: "https://tanaka-lab.example.com",
-  //   photo: "/people/kenji-tanaka.jpg",
-  //   role: "postdoc",
-  // },
+  {
+    nameEn: "Monica",
+    nameNative: "郭佳静",
+    email: "guojiajing@westlake.edu.cn"
+    photo: "/people/jiajing-guo.jpg",
+    role: "admin",
+  },
   // {
   //   nameEn: "Mei Lin",
   //   nameNative: "林梅",
@@ -62,6 +61,7 @@ export const people: Person[] = [
 // "undergrad" / "alumni" rows); a section with no members is hidden.
 export const roleSections: { role: Role; label: string; labelZh: string }[] = [
   { role: "pi", label: "Principal Investigator", labelZh: "课题组负责人 (PI)" },
+  { role: "admin", label: "Administrative", labelZh: "行政助理" },
   { role: "postdoc", label: "Postdocs", labelZh: "博士后" },
   { role: "phd", label: "PhD Students", labelZh: "博士生" },
   { role: "msc", label: "Master's Students", labelZh: "硕士生" },
