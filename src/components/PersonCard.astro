@@ -18,11 +18,12 @@ const profileHref = person.profile
       ? person.profile
       : import.meta.env.BASE_URL.replace(/\/$/, "") + person.profile)
   : undefined;
+const photoLink = profileHref || person.website;
 ---
 
 <article class="person">
-  {profileHref ? (
-    <a class="portrait" href={profileHref} aria-label={`${person.nameEn} — full profile`}>
+  {photoLink ? (
+    <a class="portrait" href={photoLink} aria-label={`${person.nameEn} — profile`}>
       <span class="fallback">{initials}</span>
       <img src={photoSrc} alt={`Portrait of ${person.nameEn}`} loading="lazy" onerror="this.style.display='none'" />
     </a>
