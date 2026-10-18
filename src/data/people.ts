@@ -46,6 +46,13 @@ export const people: Person[] = [
     photo: "/people/jiajing-guo.jpg",
     role: "admin",
   },
+   {
+    nameEn: "Kaiyuan Li",
+    nameNative: "李开元",
+    website: "https://lkysaeooi.github.io/",
+    photo: "/people/kaiyuan-li.jpg",
+    role: "phd",
+  },
   // {
   //   nameEn: "Mei Lin",
   //   nameNative: "林梅",
